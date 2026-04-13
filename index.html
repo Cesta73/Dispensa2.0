@@ -8,7 +8,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Dispensa">
-    <script src="https://cdn.jsdelivr.net/npm/quagga@0.12.1/dist/quagga.min.js"></script>
+    <script src="https://unpkg.com/@zxing/library@0.19.1/umd/index.min.js"></script>
     <style>
         * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
         :root {
@@ -28,24 +28,29 @@
             background:var(--background); color:var(--text-primary);
             min-height:100vh; overflow-x:hidden;
         }
-
+        /* SYNC BAR */
+        .sync-bar {
+            position:fixed; top:0; left:0; right:0; z-index:500;
+            background:var(--warning); color:white;
+            text-align:center; padding:8px 16px; font-size:13px; font-weight:600;
+            display:none;
+        }
         /* HEADER */
         .header {
-            position:sticky; top:0; z-index:100;
-            background:var(--primary);
-            padding:12px 16px 8px;
-            box-shadow:var(--shadow-lg);
+            background:var(--primary); color:white;
+            padding:16px 20px 12px; position:sticky; top:0; z-index:100;
+            box-shadow:var(--shadow);
         }
         .header-top {
-            display:flex; align-items:center;
-            justify-content:space-between; margin-bottom:10px;
+            display:flex; justify-content:space-between; align-items:center;
+            margin-bottom:10px;
         }
-        .header-title { color:white; font-size:20px; font-weight:700; }
+        .header-title { font-size:20px; font-weight:700; }
         .header-actions { display:flex; gap:8px; }
         .header-btn {
             background:rgba(255,255,255,0.2); border:none; color:white;
-            padding:8px 12px; border-radius:20px; font-size:14px;
-            cursor:pointer; font-weight:600;
+            width:36px; height:36px; border-radius:50%; font-size:18px;
+            cursor:pointer; display:flex; align-items:center; justify-content:center;
         }
         .search-container {
             display:flex; align-items:center; gap:8px;
@@ -58,102 +63,90 @@
             color:white; font-size:15px; width:100%;
         }
         .search-input::placeholder { color:rgba(255,255,255,0.7); }
-
-        /* SYNC STATUS */
-        .sync-bar {
-            background:var(--primary-dark); color:white;
-            text-align:center; font-size:12px; padding:4px;
-            min-height:22px;
-        }
-
         /* STATS BAR */
         .stats-bar {
             display:flex; gap:8px; padding:12px 16px;
-            overflow-x:auto; scrollbar-width:none;
-            background:white; border-bottom:1px solid var(--border);
+            overflow-x:auto; background:white;
+            border-bottom:1px solid var(--border);
         }
         .stats-bar::-webkit-scrollbar { display:none; }
         .stat-chip {
             display:flex; align-items:center; gap:6px;
-            padding:6px 14px; border-radius:20px;
-            font-size:13px; font-weight:600; white-space:nowrap;
-            cursor:pointer; border:2px solid transparent; transition:all 0.2s;
+            padding:6px 14px; border-radius:20px; font-size:13px;
+            font-weight:600; white-space:nowrap; cursor:pointer;
+            border:2px solid transparent; transition:all 0.2s;
+            background:#F5F5F5; color:var(--text-secondary);
         }
-        .stat-chip.all { background:#E8F5E9; color:var(--primary); }
-        .stat-chip.expired { background:#FFEBEE; color:var(--danger); }
-        .stat-chip.expiring { background:#FFF8E1; color:var(--warning); }
-        .stat-chip.low { background:#E3F2FD; color:var(--info); }
-        .stat-chip.active { border-color:currentColor; }
-
+        .stat-chip.active { background:var(--primary); color:white; }
+        .stat-chip.expired.active { background:var(--danger); }
+        .stat-chip.expiring.active { background:var(--warning); }
+        .stat-chip.low.active { background:var(--info); }
         /* CATEGORY TABS */
         .category-tabs {
             display:flex; gap:8px; padding:10px 16px;
-            overflow-x:auto; scrollbar-width:none; background:white;
+            overflow-x:auto; background:white;
+            border-bottom:1px solid var(--border);
         }
         .category-tabs::-webkit-scrollbar { display:none; }
-        .category-tab {
-            padding:6px 14px; border-radius:20px; border:2px solid var(--border);
-            background:white; font-size:13px; font-weight:600;
-            cursor:pointer; white-space:nowrap; transition:all 0.2s;
+        .cat-tab {
+            padding:6px 14px; border-radius:20px; font-size:13px;
+            font-weight:600; white-space:nowrap; cursor:pointer;
+            background:#F5F5F5; color:var(--text-secondary);
+            border:2px solid transparent; transition:all 0.2s;
         }
-        .category-tab.active {
-            background:var(--primary); color:white; border-color:var(--primary);
-        }
-
+        .cat-tab.active { background:var(--primary); color:white; }
         /* PRODUCTS GRID */
-        .products-container { padding:12px 16px 100px; }
+        .products-container { padding:16px; }
         .products-grid {
-            display:grid; grid-template-columns:1fr; gap:12px;
+            display:grid;
+            grid-template-columns:repeat(auto-fill, minmax(150px, 1fr));
+            gap:12px;
         }
-        @media(min-width:400px) { .products-grid { grid-template-columns:repeat(2,1fr); } }
-        @media(min-width:600px) { .products-grid { grid-template-columns:repeat(3,1fr); } }
-
-        /* PRODUCT CARD */
         .product-card {
-            background:var(--card-bg); border-radius:var(--radius);
-            box-shadow:var(--shadow); overflow:hidden;
-            transition:transform 0.2s; cursor:pointer;
+            background:white; border-radius:var(--radius);
+            padding:14px 12px; cursor:pointer;
+            box-shadow:var(--shadow); border:2px solid transparent;
+            transition:all 0.2s; position:relative;
         }
-        .product-card:active { transform:scale(0.97); }
-        .card-header {
-            display:flex; align-items:center; gap:10px;
-            padding:12px 12px 8px;
-        }
-        .card-emoji { font-size:36px; }
-        .card-info { flex:1; min-width:0; }
+        .product-card.expired { border-color:var(--danger); background:#FFF8F8; }
+        .product-card.expiring { border-color:var(--warning); background:#FFFDE7; }
+        .product-card.low-stock { border-color:var(--info); background:#E3F2FD; }
+        .card-emoji { font-size:36px; display:block; text-align:center; margin-bottom:8px; }
         .card-name {
-            font-size:15px; font-weight:700;
-            white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+            font-size:14px; font-weight:700; text-align:center;
+            margin-bottom:4px; line-height:1.3;
+            display:-webkit-box; -webkit-line-clamp:2;
+            -webkit-box-orient:vertical; overflow:hidden;
         }
-        .card-category { font-size:11px; color:var(--text-secondary); margin-top:2px; }
-        .card-body { padding:0 12px 12px; }
-        .card-expiry {
-            display:inline-block; padding:3px 10px;
-            border-radius:12px; font-size:12px; font-weight:600; margin-bottom:8px;
+        .card-category {
+            font-size:11px; color:var(--text-secondary);
+            text-align:center; margin-bottom:8px;
         }
-        .card-expiry.expired { background:#FFEBEE; color:var(--danger); }
-        .card-expiry.expiring { background:#FFF8E1; color:var(--warning); }
-        .card-expiry.ok { background:#E8F5E9; color:var(--primary); }
-        .card-expiry.none { background:#F5F5F5; color:var(--text-secondary); }
-        .card-qty-row {
-            display:flex; align-items:center; justify-content:space-between;
+        .card-quantity {
+            display:flex; align-items:center; justify-content:center;
+            gap:8px; margin-bottom:8px;
         }
-        .qty-controls { display:flex; align-items:center; gap:8px; }
         .qty-btn {
-            width:30px; height:30px; border-radius:50%; border:none;
-            font-size:18px; cursor:pointer; display:flex;
+            width:28px; height:28px; border-radius:50%; border:none;
+            font-size:16px; cursor:pointer; display:flex;
             align-items:center; justify-content:center; font-weight:700;
         }
         .qty-btn.minus { background:#FFEBEE; color:var(--danger); }
         .qty-btn.plus { background:#E8F5E9; color:var(--primary); }
-        .qty-value { font-size:16px; font-weight:700; min-width:30px; text-align:center; }
-        .qty-unit { font-size:12px; color:var(--text-secondary); }
-        .threshold-badge {
-            display:inline-flex; align-items:center; gap:4px;
-            padding:4px 10px; border-radius:12px; font-size:12px;
-            font-weight:600; background:#E3F2FD; color:var(--info);
+        .qty-value { font-size:15px; font-weight:700; min-width:30px; text-align:center; }
+        .card-expiry {
+            font-size:11px; text-align:center; padding:3px 8px;
+            border-radius:10px; background:#F5F5F5; color:var(--text-secondary);
         }
-
+        .card-expiry.expired { background:#FFEBEE; color:var(--danger); font-weight:700; }
+        .card-expiry.expiring { background:#FFF9C4; color:var(--warning); font-weight:700; }
+        /* LOADING */
+        .loading-spinner {
+            width:40px; height:40px; border:4px solid var(--border);
+            border-top-color:var(--primary); border-radius:50%;
+            animation:spin 0.8s linear infinite; margin:40px auto;
+        }
+        @keyframes spin { to { transform:rotate(360deg); } }
         /* FAB */
         .fab {
             position:fixed; bottom:24px; right:24px; z-index:200;
@@ -164,7 +157,6 @@
             transition:transform 0.2s;
         }
         .fab:active { transform:scale(0.9); }
-
         /* MODAL */
         .modal-overlay {
             position:fixed; inset:0; z-index:300;
@@ -185,7 +177,6 @@
             border-radius:2px; margin:0 auto 16px;
         }
         .modal-title { font-size:20px; font-weight:700; margin-bottom:16px; }
-
         /* FORM */
         .form-group { margin-bottom:14px; }
         .form-label { display:block; font-size:13px; font-weight:600; margin-bottom:6px; color:var(--text-secondary); }
@@ -198,7 +189,6 @@
         .form-input:focus { border-color:var(--primary); }
         .form-row { display:flex; gap:10px; }
         .form-row .form-group { flex:1; }
-
         /* EMOJI GRID */
         .emoji-grid {
             display:grid; grid-template-columns:repeat(8,1fr); gap:6px;
@@ -209,32 +199,30 @@
             cursor:pointer; border:2px solid transparent; transition:all 0.15s;
         }
         .emoji-option.selected { border-color:var(--primary); background:#E8F5E9; }
-
-        /* BUTTONS */
+        /* BTN */
         .btn {
-            width:100%; padding:14px; border-radius:var(--radius);
-            border:none; font-size:16px; font-weight:700;
-            cursor:pointer; margin-bottom:10px; transition:opacity 0.2s;
+            width:100%; padding:14px; border:none; border-radius:var(--radius);
+            font-size:16px; font-weight:700; cursor:pointer;
+            margin-bottom:10px; transition:opacity 0.2s;
         }
         .btn:active { opacity:0.8; }
         .btn-primary { background:var(--primary); color:white; }
         .btn-secondary { background:#F5F5F5; color:var(--text-primary); }
         .btn-danger { background:var(--danger); color:white; }
-        .btn-scan { background:var(--info); color:white; }
-
-        /* DETAIL MODAL */
-        .detail-emoji { font-size:64px; text-align:center; margin-bottom:8px; }
-        .detail-name { font-size:24px; font-weight:700; text-align:center; margin-bottom:4px; }
-        .detail-category { text-align:center; color:var(--text-secondary); margin-bottom:16px; }
+        .btn-info { background:var(--info); color:white; }
+        /* DETAIL */
+        .detail-emoji { font-size:72px; text-align:center; margin-bottom:8px; }
+        .detail-name { font-size:22px; font-weight:700; text-align:center; margin-bottom:4px; }
+        .detail-category { font-size:14px; color:var(--text-secondary); text-align:center; margin-bottom:20px; }
         .detail-row {
             display:flex; justify-content:space-between; align-items:center;
-            padding:12px 0; border-bottom:1px solid var(--border);
+            padding:12px 0; border-bottom:1px solid var(--border); font-size:15px;
         }
-        .detail-label { color:var(--text-secondary); font-size:14px; }
-        .detail-value { font-weight:600; font-size:14px; }
-        .detail-actions { display:flex; gap:10px; margin-top:16px; }
+        .detail-row:last-child { border-bottom:none; }
+        .detail-label { color:var(--text-secondary); }
+        .detail-value { font-weight:600; }
+        .detail-actions { display:flex; gap:10px; margin-top:20px; }
         .detail-actions .btn { margin-bottom:0; }
-
         /* SCANNER */
         .scanner-container {
             width:100%; height:260px; background:#000;
@@ -265,15 +253,17 @@
         .scanner-status.loading { background:#E3F2FD; color:var(--info); }
         .scanner-status.error { background:#FFEBEE; color:var(--danger); }
         .scanner-status.success { background:#E8F5E9; color:var(--primary); }
-
-        /* BARCODE INFO */
-        .barcode-info {
-            display:flex; align-items:center; gap:8px;
-            padding:10px 14px; background:#F5F5F5;
-            border-radius:var(--radius-sm); font-size:13px;
-            color:var(--text-secondary); margin-top:8px;
+        /* BARCODE FOUND BOX */
+        .barcode-found-box {
+            background:#E8F5E9; border-radius:var(--radius-sm);
+            padding:12px; margin-bottom:14px;
+            display:flex; align-items:center; gap:10px;
         }
-
+        .barcode-found-emoji { font-size:32px; }
+        .barcode-found-info { flex:1; }
+        .barcode-found-name { font-weight:700; font-size:15px; }
+        .barcode-found-brand { font-size:13px; color:var(--text-secondary); }
+        .barcode-found-code { font-size:11px; color:var(--text-secondary); font-family:monospace; }
         /* NOTIFICATION PANEL */
         .notif-panel {
             position:fixed; top:0; right:0; bottom:0;
@@ -288,13 +278,11 @@
             font-weight:700; font-size:16px; position:sticky; top:0; background:white;
         }
         .notif-item {
-            padding:12px 16px; border-bottom:1px solid var(--border);
-            font-size:14px;
+            padding:12px 16px; border-bottom:1px solid var(--border); font-size:14px;
         }
         .notif-item.danger { border-left:4px solid var(--danger); }
         .notif-item.warning { border-left:4px solid var(--warning); }
         .notif-item.info { border-left:4px solid var(--info); }
-
         /* TOAST */
         .toast {
             position:fixed; bottom:100px; left:50%;
@@ -309,53 +297,33 @@
         .toast.error { background:var(--danger); }
         .toast.warning { background:var(--warning); }
         .toast.info { background:var(--info); }
-
         /* EMPTY STATE */
         .empty-state { text-align:center; padding:60px 20px; color:var(--text-secondary); }
         .empty-state-icon { font-size:64px; margin-bottom:16px; display:block; }
         .empty-state-title { font-size:20px; font-weight:600; margin-bottom:8px; color:var(--text-primary); }
-
-        /* LOADING */
-        .loading-spinner {
-            width:40px; height:40px; border:4px solid var(--border);
-            border-top-color:var(--primary); border-radius:50%;
-            animation:spin 0.8s linear infinite; margin:40px auto;
-        }
-        @keyframes spin { to { transform:rotate(360deg); } }
-/* SYNC BAR */
-.sync-bar {
-    display:none;
-    text-align:center;
-    padding:8px;
-    font-size:13px;
-    font-weight:600;
-    color:white;
-    position:sticky;
-    top:72px;
-    z-index:99;
-}    
-</style>
+    </style>
 </head>
 <body>
 
+<!-- SYNC BAR -->
+<div class="sync-bar" id="sync-bar">⏳ Connessione in corso...</div>
+
 <!-- HEADER -->
-<div class="header">
+<div class="header" style="margin-top:0">
     <div class="header-top">
-        <span class="header-title">🏠 Dispensa di Casa</span>
+        <div class="header-title">🏠 Dispensa di Casa</div>
         <div class="header-actions">
-            <button class="header-btn" onclick="toggleNotifPanel()">🔔 <span id="notif-count"></span></button>
+            <button class="header-btn" onclick="toggleNotifPanel()" id="notif-btn">🔔</button>
             <button class="header-btn" onclick="exportData()">📤</button>
+            <button class="header-btn" onclick="loadFromJsonBin()">🔄</button>
         </div>
     </div>
     <div class="search-container">
         <span class="search-icon">🔍</span>
-        <input class="search-input" type="text" placeholder="Cerca prodotto..."
+        <input class="search-input" type="text" placeholder="Cerca prodotti..."
                id="search-input" oninput="renderProducts()">
     </div>
 </div>
-
-<!-- SYNC STATUS BAR -->
-<div class="sync-bar" id="sync-bar">⏳ Connessione in corso...</div>
 
 <!-- STATS BAR -->
 <div class="stats-bar">
@@ -395,7 +363,8 @@
 <div class="notif-panel" id="notif-panel">
     <div class="notif-header">
         🔔 Notifiche
-        <button onclick="toggleNotifPanel()" style="background:none;border:none;font-size:20px;cursor:pointer;">✕</button>
+        <button onclick="toggleNotifPanel()"
+                style="background:none;border:none;font-size:20px;cursor:pointer;">✕</button>
     </div>
     <div id="notif-list"></div>
 </div>
@@ -406,7 +375,7 @@
         <div class="modal-handle"></div>
         <h2 class="modal-title">📷 Scansiona Barcode</h2>
         <div class="scanner-container">
-            <div id="scanner-area" style="width:100%;height:100%;"></div>
+            <video id="scanner-video" style="width:100%;height:100%;object-fit:cover;"></video>
             <div class="scanner-overlay">
                 <div style="position:relative;display:flex;align-items:center;justify-content:center;">
                     <div class="scanner-frame"></div>
@@ -425,23 +394,23 @@
         <div class="modal-handle"></div>
         <h2 class="modal-title" id="add-modal-title">➕ Aggiungi Prodotto</h2>
 
-        <!-- Barcode trovato -->
-        <div id="barcode-found-box" style="display:none;margin-bottom:16px;">
-            <div style="background:#E8F5E9;border-radius:10px;padding:12px;display:flex;align-items:center;gap:10px;">
-                <span style="font-size:28px;" id="barcode-found-emoji">🛒</span>
-                <div>
-                    <div style="font-weight:700;font-size:15px;" id="barcode-found-name"></div>
-                    <div style="font-size:12px;color:#666;" id="barcode-found-brand"></div>
-                </div>
+        <!-- Barcode found box -->
+        <div class="barcode-found-box" id="barcode-found-box" style="display:none">
+            <div class="barcode-found-emoji" id="barcode-found-emoji">📦</div>
+            <div class="barcode-found-info">
+                <div class="barcode-found-name" id="barcode-found-name"></div>
+                <div class="barcode-found-brand" id="barcode-found-brand"></div>
+                <div class="barcode-found-code" id="barcode-found-code"></div>
             </div>
-            <div class="barcode-info">🔖 Codice: <strong id="barcode-found-code"></strong></div>
         </div>
 
-        <button class="btn btn-scan" onclick="openScanner()" id="scan-btn">📷 Scansiona Barcode</button>
+        <button class="btn btn-info" onclick="openScanner()" style="margin-bottom:14px">
+            📷 Scansiona Barcode
+        </button>
 
         <div class="form-group">
             <label class="form-label">Nome Prodotto *</label>
-            <input class="form-input" type="text" id="input-name" placeholder="Es. Pasta, Latte...">
+            <input class="form-input" type="text" id="input-name" placeholder="Es. Pasta Barilla...">
         </div>
 
         <div class="form-group">
@@ -473,7 +442,8 @@
         <div class="form-row">
             <div class="form-group">
                 <label class="form-label">Quantità</label>
-                <input class="form-input" type="number" id="input-qty" value="1" min="0">
+                <input class="form-input" type="number" id="input-qty"
+                       placeholder="1" min="0" value="1">
             </div>
             <div class="form-group">
                 <label class="form-label">Unità</label>
@@ -483,11 +453,11 @@
                     <option>g</option>
                     <option>L</option>
                     <option>ml</option>
-                    <option>barattolo</option>
-                    <option>busta</option>
-                    <option>scatola</option>
-                    <option>bottiglia</option>
-                    <option>confezione</option>
+                    <option>conf</option>
+                    <option>bst</option>
+                    <option>bot</option>
+                    <option>latt</option>
+                    <option>vaso</option>
                 </select>
             </div>
         </div>
@@ -499,13 +469,15 @@
             </div>
             <div class="form-group">
                 <label class="form-label">Soglia minima</label>
-                <input class="form-input" type="number" id="input-threshold" value="1" min="0">
+                <input class="form-input" type="number" id="input-threshold"
+                       placeholder="2" min="0" value="2">
             </div>
         </div>
 
         <div class="form-group">
             <label class="form-label">Note</label>
-            <input class="form-input" type="text" id="input-notes" placeholder="Note opzionali...">
+            <input class="form-input" type="text" id="input-notes"
+                   placeholder="Note opzionali...">
         </div>
 
         <button class="btn btn-primary" onclick="saveProduct()">💾 Salva Prodotto</button>
@@ -531,175 +503,186 @@
                 onclick="closeDetail()">Chiudi</button>
     </div>
 </div>
-
-</body>
 <script>
-// ========== JSONBIN CONFIG ==========
-const JSONBIN_BIN_ID = '69dc981faaba882197f26662';
-const JSONBIN_MASTER_KEY = '$2a$10$yAkIzU6bBTdv7q33Aj7CKe7QrQJcpq1UjR77JTuxJibH4EA.41vT.';
-const JSONBIN_URL = `https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`;
+// ========== CONFIG ==========
+const BIN_ID = '6840f43e8960c979a5a5a1ef';
+const API_KEY = '$2a$10$O3tpLCeQjHJKNGNhFQiEO.3mAFbMBKGPDLOtYomT6gRWiQfAEVxRy';
+const BASE_URL = 'https://api.jsonbin.io/v3/b';
 
-// ========== STATO ==========
+// ========== STATE ==========
 let products = [];
+let editingId = null;
 let currentFilter = 'all';
 let currentCategory = 'all';
-let editingId = null;
 let selectedEmoji = '📦';
-let scannedBarcode = '';
-let scannerRunning = false;
-let syncTimeout = null;
+let codeReader = null;
+let detailId = null;
 
-const EMOJIS = [
-    '🍝','🍚','🥫','🥛','🧀','🥚','🥩','🐟','🍗',
-    '🥦','🍅','🧅','🧄','🥕','🍊','🍋','🍎','🍌',
-    '🧁','🍪','🍫','🍬','🥤','🧃','☕','🍵','🫖',
-    '🍞','🥐','🧇','🥞','🫙','🧂','🫒','🥜','🌰',
-    '🧊','❄️','🧹','🧴','🧼','💊','🐾','📦','🛒'
-];
+const EMOJIS = ['🍝','🥫','🥛','🧀','🥩','🐟','🥚','🥦','🥕','🍎',
+                '🍋','🧅','🧄','🍞','🥐','🧁','🍫','🍬','🧃','🥤',
+                '☕','🫖','🍵','🧊','🫙','🛢️','🧹','🧴','💊','🐾','📦'];
 
-// ========== JSONBIN SYNC ==========
-function setSyncBar(msg, color = '#F57F17') {
-    const bar = document.getElementById('sync-bar');
-    bar.textContent = msg;
-    bar.style.background = color;
-    bar.style.display = 'block';
-}
+const CATEGORY_EMOJIS = {
+    '🍝 Pasta & Riso':'🍝','🥫 Conserve':'🥫','🥛 Latticini':'🥛',
+    '🥩 Carne & Pesce':'🥩','🥦 Frutta & Verdura':'🥦','🧁 Dolci & Snack':'🧁',
+    '🧃 Bevande':'🧃','🫙 Condimenti':'🫙','🧊 Surgelati':'🧊',
+    '🍞 Pane & Cereali':'🍞','🧹 Pulizia Casa':'🧹','🧴 Igiene Personale':'🧴',
+    '💊 Farmaci':'💊','🐾 Animali':'🐾','📦 Altro':'📦'
+};
 
-function hideSyncBar() {
-    const bar = document.getElementById('sync-bar');
-    bar.style.display = 'none';
-}
+// ========== INIT ==========
+document.addEventListener('DOMContentLoaded', async () => {
+    renderEmojiGrid();
+    await loadFromJsonBin();
+    setInterval(loadFromJsonBin, 60000);
+    setInterval(checkNotifications, 300000);
+});
 
+// ========== JSONBIN ==========
 async function loadFromJsonBin() {
-    setSyncBar('⏳ Caricamento dati in corso...', '#0288D1');
     try {
-        const res = await fetch(JSONBIN_URL + '/latest', {
-            headers: {
-                'X-Master-Key': JSONBIN_MASTER_KEY
-            }
+        showSyncBar('🔄 Sincronizzazione...');
+        const res = await fetch(`${BASE_URL}/${BIN_ID}/latest`, {
+            headers: { 'X-Master-Key': API_KEY }
         });
-        if (!res.ok) throw new Error('Errore caricamento');
-        const json = await res.json();
-        const data = json.record;
-
-        if (Array.isArray(data.products)) {
-            products = data.products;
-            localStorage.setItem('dispensa_v3', JSON.stringify(products));
-            setSyncBar('✅ Dati sincronizzati!', '#2E7D32');
-            setTimeout(hideSyncBar, 2000);
-        } else {
-            // Bin vuoto o struttura nuova, prova localStorage
-            const local = localStorage.getItem('dispensa_v3');
-            if (local) products = JSON.parse(local);
-            setSyncBar('⚠️ Bin vuoto, uso dati locali', '#F57F17');
-            setTimeout(hideSyncBar, 2000);
-        }
+        if (!res.ok) throw new Error('Errore fetch');
+        const data = await res.json();
+        products = data.record.products || [];
+        hideSyncBar();
+        renderAll();
+        checkNotifications();
     } catch(e) {
-        // Fallback localStorage
-        const local = localStorage.getItem('dispensa_v3');
-        if (local) products = JSON.parse(local);
-        setSyncBar('❌ Offline - dati locali', '#D32F2F');
-        setTimeout(hideSyncBar, 3000);
+        hideSyncBar();
+        showToast('⚠️ Offline - dati locali', 'warning');
+        renderAll();
     }
-    renderCategoryTabs();
-    renderProducts();
-    updateStats();
-    checkNotifications();
 }
 
 async function saveToJsonBin() {
     try {
-        await fetch(JSONBIN_URL, {
+        showSyncBar('💾 Salvataggio...');
+        const res = await fetch(`${BASE_URL}/${BIN_ID}`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
-                'X-Master-Key': JSONBIN_MASTER_KEY
+                'X-Master-Key': API_KEY
             },
             body: JSON.stringify({ products })
         });
-        setSyncBar('✅ Salvato sul cloud!', '#2E7D32');
-        setTimeout(hideSyncBar, 2000);
+        if (!res.ok) throw new Error('Errore salvataggio');
+        hideSyncBar();
     } catch(e) {
-        setSyncBar('❌ Salvataggio cloud fallito - solo locale', '#D32F2F');
-        setTimeout(hideSyncBar, 3000);
+        hideSyncBar();
+        showToast('❌ Errore salvataggio', 'error');
     }
 }
 
-function saveData() {
-    // Salva sempre in locale
-    localStorage.setItem('dispensa_v3', JSON.stringify(products));
-    // Debounce salvataggio cloud (evita troppe chiamate)
-    clearTimeout(syncTimeout);
-    setSyncBar('⏳ Sincronizzazione...', '#F57F17');
-    syncTimeout = setTimeout(() => {
-        saveToJsonBin();
-    }, 1500);
+// ========== RENDER ==========
+function renderAll() {
+    renderStats();
+    renderCategoryTabs();
+    renderProducts();
 }
 
-// ========== INIT ==========
-function init() {
-    renderEmojiGrid();
-    requestNotificationPermission();
-    loadFromJsonBin();
-}
-
-// ========== UTILS ==========
-function uid() { return Date.now().toString(36) + Math.random().toString(36).substr(2); }
-
-function dateAdd(days) {
-    const d = new Date();
-    d.setDate(d.getDate() + days);
-    return d.toISOString().split('T')[0];
-}
-
-function getExpiryStatus(expiry) {
-    if (!expiry) return 'none';
+function renderStats() {
     const today = new Date(); today.setHours(0,0,0,0);
-    const exp = new Date(expiry); exp.setHours(0,0,0,0);
-    const diff = Math.floor((exp - today) / 86400000);
-    if (diff < 0) return 'expired';
-    if (diff <= 7) return 'expiring';
-    return 'ok';
-}
+    const in7 = new Date(today); in7.setDate(in7.getDate()+7);
 
-function getExpiryLabel(expiry) {
-    if (!expiry) return 'Nessuna scadenza';
-    const today = new Date(); today.setHours(0,0,0,0);
-    const exp = new Date(expiry); exp.setHours(0,0,0,0);
-    const diff = Math.floor((exp - today) / 86400000);
-    if (diff < 0) return `Scaduto ${Math.abs(diff)}g fa`;
-    if (diff === 0) return 'Scade oggi!';
-    if (diff === 1) return 'Scade domani';
-    if (diff <= 7) return `Scade in ${diff}g`;
-    return exp.toLocaleDateString('it-IT', {day:'2-digit',month:'2-digit',year:'numeric'});
-}
+    let expired=0, expiring=0, low=0;
+    products.forEach(p => {
+        if (p.expiry) {
+            const d = new Date(p.expiry);
+            if (d < today) expired++;
+            else if (d <= in7) expiring++;
+        }
+        if (p.qty <= p.threshold) low++;
+    });
 
-// ========== STATS ==========
-function updateStats() {
-    const expired = products.filter(p => getExpiryStatus(p.expiry) === 'expired').length;
-    const expiring = products.filter(p => getExpiryStatus(p.expiry) === 'expiring').length;
-    const low = products.filter(p => p.qty <= p.threshold && p.qty > 0).length;
-    const total = products.length;
-
-    document.getElementById('count-all').textContent = total;
+    document.getElementById('count-all').textContent = products.length;
     document.getElementById('count-expired').textContent = expired;
     document.getElementById('count-expiring').textContent = expiring;
     document.getElementById('count-low').textContent = low;
-
-    const notifCount = expired + expiring + low;
-    const badge = document.getElementById('notif-count');
-    badge.textContent = notifCount > 0 ? notifCount : '';
 }
 
-// ========== CATEGORY TABS ==========
 function renderCategoryTabs() {
     const cats = ['all', ...new Set(products.map(p => p.category))];
     const tabs = document.getElementById('category-tabs');
     tabs.innerHTML = cats.map(c => `
-        <div class="cat-tab ${c === currentCategory ? 'active' : ''}"
+        <div class="category-tab ${c === currentCategory ? 'active' : ''}"
              onclick="filterByCategory('${c}')">
             ${c === 'all' ? '🏠 Tutti' : c}
-        </div>`).join('');
+        </div>
+    `).join('');
+}
+
+function renderProducts() {
+    const grid = document.getElementById('products-grid');
+    const search = document.getElementById('search-input').value.toLowerCase();
+    const today = new Date(); today.setHours(0,0,0,0);
+    const in7 = new Date(today); in7.setDate(in7.getDate()+7);
+
+    let filtered = products.filter(p => {
+        if (search && !p.name.toLowerCase().includes(search) &&
+            !p.category.toLowerCase().includes(search)) return false;
+        if (currentCategory !== 'all' && p.category !== currentCategory) return false;
+        if (currentFilter === 'expired') {
+            return p.expiry && new Date(p.expiry) < today;
+        }
+        if (currentFilter === 'expiring') {
+            const d = p.expiry ? new Date(p.expiry) : null;
+            return d && d >= today && d <= in7;
+        }
+        if (currentFilter === 'low') return p.qty <= p.threshold;
+        return true;
+    });
+
+    if (filtered.length === 0) {
+        grid.innerHTML = `
+            <div style="grid-column:1/-1">
+                <div class="empty-state">
+                    <span class="empty-state-icon">📦</span>
+                    <div class="empty-state-title">Nessun prodotto trovato</div>
+                    <p>Aggiungi il tuo primo prodotto con il pulsante +</p>
+                </div>
+            </div>`;
+        return;
+    }
+
+    grid.innerHTML = filtered.map(p => {
+        const d = p.expiry ? new Date(p.expiry) : null;
+        let status = 'ok', badge = '';
+        if (d) {
+            if (d < today) { status = 'expired'; badge = '❌ Scaduto'; }
+            else if (d <= in7) {
+                const days = Math.ceil((d-today)/(1000*60*60*24));
+                status = 'expiring';
+                badge = `⚠️ ${days}gg`;
+            }
+        }
+        if (p.qty <= p.threshold && status === 'ok') { status = 'low'; badge = '📉 Scorte basse'; }
+
+        return `
+        <div class="product-card ${status}" onclick="openDetail('${p.id}')">
+            <div class="product-emoji">${p.emoji || '📦'}</div>
+            <div class="product-name">${p.name}</div>
+            <div class="product-category">${p.category}</div>
+            ${badge ? `<div class="product-badge ${status}">${badge}</div>` : ''}
+            <div class="product-qty">
+                <button class="qty-btn minus" onclick="event.stopPropagation();changeQty('${p.id}',-1)">−</button>
+                <span class="qty-value">${p.qty} ${p.unit}</span>
+                <button class="qty-btn plus" onclick="event.stopPropagation();changeQty('${p.id}',1)">+</button>
+            </div>
+            ${p.expiry ? `<div class="product-expiry">📅 ${formatDate(p.expiry)}</div>` : ''}
+        </div>`;
+    }).join('');
+}
+
+// ========== FILTRI ==========
+function filterByStatus(status) {
+    currentFilter = status;
+    document.querySelectorAll('.stat-chip').forEach(c => c.classList.remove('active'));
+    document.getElementById(`chip-${status}`).classList.add('active');
+    renderProducts();
 }
 
 function filterByCategory(cat) {
@@ -708,110 +691,28 @@ function filterByCategory(cat) {
     renderProducts();
 }
 
-// ========== RENDER PRODUCTS ==========
-function renderProducts() {
-    const search = document.getElementById('search-input').value.toLowerCase();
-    const grid = document.getElementById('products-grid');
-
-    let filtered = products.filter(p => {
-        const matchSearch = p.name.toLowerCase().includes(search) ||
-                           p.category.toLowerCase().includes(search);
-        const matchCat = currentCategory === 'all' || p.category === currentCategory;
-        const expiryStatus = getExpiryStatus(p.expiry);
-        const isLow = p.qty <= p.threshold && p.qty > 0;
-
-        let matchFilter = true;
-        if (currentFilter === 'expired') matchFilter = expiryStatus === 'expired';
-        else if (currentFilter === 'expiring') matchFilter = expiryStatus === 'expiring';
-        else if (currentFilter === 'low') matchFilter = isLow;
-
-        return matchSearch && matchCat && matchFilter;
-    });
-
-    if (filtered.length === 0) {
-        grid.innerHTML = `
-            <div class="empty-state" style="grid-column:1/-1">
-                <span class="empty-state-icon">📭</span>
-                <div class="empty-state-title">Nessun prodotto trovato</div>
-                <div style="color:var(--text-secondary);font-size:14px">
-                    Aggiungi il tuo primo prodotto con il pulsante +
-                </div>
-            </div>`;
-        return;
-    }
-
-    grid.innerHTML = filtered.map(p => {
-        const expiryStatus = getExpiryStatus(p.expiry);
-        const isLow = p.qty <= p.threshold && p.qty > 0;
-        const isOut = p.qty === 0;
-        let cardClass = '';
-        if (expiryStatus === 'expired') cardClass = 'expired';
-        else if (expiryStatus === 'expiring') cardClass = 'expiring';
-        else if (isLow) cardClass = 'low-stock';
-        if (isOut) cardClass += ' out-of-stock';
-
-        return `
-        <div class="product-card ${cardClass}" onclick="openDetail('${p.id}')">
-            <span class="card-emoji">${p.emoji}</span>
-            <div class="card-name">${p.name}</div>
-            <div class="card-category">${p.category.split(' ').slice(1).join(' ')}</div>
-            <div class="card-quantity" onclick="event.stopPropagation()">
-                <button class="qty-btn minus" onclick="changeQty('${p.id}',-1)">−</button>
-                <span class="qty-value">${p.qty}<small style="font-size:11px;font-weight:400"> ${p.unit}</small></span>
-                <button class="qty-btn plus" onclick="changeQty('${p.id}',1)">+</button>
-            </div>
-            <div class="card-expiry ${expiryStatus}">${getExpiryLabel(p.expiry)}</div>
-        </div>`;
-    }).join('');
-}
-
-// ========== FILTER ==========
-function filterByStatus(status) {
-    currentFilter = status;
-    document.querySelectorAll('.stat-chip').forEach(c => c.classList.remove('active'));
-    document.getElementById('chip-' + status).classList.add('active');
-    renderProducts();
-}
-
 // ========== QUANTITÀ ==========
-function changeQty(id, delta) {
+async function changeQty(id, delta) {
     const p = products.find(x => x.id === id);
     if (!p) return;
     p.qty = Math.max(0, p.qty + delta);
-    saveData();
-    renderProducts();
-    updateStats();
-    checkNotifications();
-}
-
-// ========== EMOJI GRID ==========
-function renderEmojiGrid() {
-    const grid = document.getElementById('emoji-grid');
-    grid.innerHTML = EMOJIS.map(e => `
-        <div class="emoji-option ${e === selectedEmoji ? 'selected' : ''}"
-             onclick="selectEmoji('${e}')">${e}</div>`).join('');
-}
-
-function selectEmoji(e) {
-    selectedEmoji = e;
-    renderEmojiGrid();
+    renderAll();
+    await saveToJsonBin();
 }
 
 // ========== MODAL AGGIUNGI ==========
 function openAddModal() {
     editingId = null;
-    scannedBarcode = '';
-    selectedEmoji = '📦';
     document.getElementById('add-modal-title').textContent = '➕ Aggiungi Prodotto';
     document.getElementById('input-name').value = '';
-    document.getElementById('input-category').value = '🍝 Pasta & Riso';
+    document.getElementById('input-category').value = '📦 Altro';
     document.getElementById('input-qty').value = '1';
     document.getElementById('input-unit').value = 'pz';
     document.getElementById('input-expiry').value = '';
-    document.getElementById('input-threshold').value = '1';
+    document.getElementById('input-threshold').value = '2';
     document.getElementById('input-notes').value = '';
     document.getElementById('barcode-found-box').style.display = 'none';
-    document.getElementById('scan-btn').style.display = 'block';
+    selectedEmoji = '📦';
     renderEmojiGrid();
     document.getElementById('add-modal').classList.add('active');
 }
@@ -819,79 +720,83 @@ function openAddModal() {
 function closeAddModal() {
     document.getElementById('add-modal').classList.remove('active');
     editingId = null;
-    scannedBarcode = '';
 }
 
-// ========== SALVA PRODOTTO ==========
-function saveProduct() {
+function renderEmojiGrid() {
+    const grid = document.getElementById('emoji-grid');
+    if (!grid) return;
+    grid.innerHTML = EMOJIS.map(e => `
+        <div class="emoji-option ${e === selectedEmoji ? 'selected' : ''}"
+             onclick="selectEmoji('${e}')">${e}</div>
+    `).join('');
+}
+
+function selectEmoji(e) {
+    selectedEmoji = e;
+    renderEmojiGrid();
+}
+
+async function saveProduct() {
     const name = document.getElementById('input-name').value.trim();
-    if (!name) { showToast('⚠️ Inserisci il nome del prodotto!', 'warning'); return; }
+    if (!name) { showToast('⚠️ Inserisci il nome!', 'warning'); return; }
 
     const product = {
-        id: editingId || uid(),
+        id: editingId || Date.now().toString(),
         name,
-        emoji: selectedEmoji,
         category: document.getElementById('input-category').value,
-        qty: parseInt(document.getElementById('input-qty').value) || 0,
+        emoji: selectedEmoji,
+        qty: parseFloat(document.getElementById('input-qty').value) || 0,
         unit: document.getElementById('input-unit').value,
         expiry: document.getElementById('input-expiry').value,
-        threshold: parseInt(document.getElementById('input-threshold').value) || 1,
+        threshold: parseFloat(document.getElementById('input-threshold').value) || 2,
         notes: document.getElementById('input-notes').value.trim(),
-        barcode: scannedBarcode || ''
+        updatedAt: new Date().toISOString()
     };
 
     if (editingId) {
-        const idx = products.findIndex(p => p.id === editingId);
-        products[idx] = product;
+        const i = products.findIndex(p => p.id === editingId);
+        if (i !== -1) products[i] = product;
         showToast('✅ Prodotto aggiornato!', 'success');
     } else {
         products.push(product);
         showToast('✅ Prodotto aggiunto!', 'success');
     }
 
-    saveData();
-    renderCategoryTabs();
-    renderProducts();
-    updateStats();
-    checkNotifications();
     closeAddModal();
+    renderAll();
+    await saveToJsonBin();
 }
 
-// ========== MODAL DETTAGLIO ==========
-let detailId = null;
-
+// ========== DETAIL MODAL ==========
 function openDetail(id) {
-    detailId = id;
     const p = products.find(x => x.id === id);
     if (!p) return;
-    document.getElementById('detail-emoji').textContent = p.emoji;
+    detailId = id;
+    const today = new Date(); today.setHours(0,0,0,0);
+
+    document.getElementById('detail-emoji').textContent = p.emoji || '📦';
     document.getElementById('detail-name').textContent = p.name;
     document.getElementById('detail-category').textContent = p.category;
-    const expiryStatus = getExpiryStatus(p.expiry);
-    document.getElementById('detail-rows').innerHTML = `
-        <div class="detail-row">
-            <span class="detail-label">Quantità</span>
-            <span class="detail-value">${p.qty} ${p.unit}</span>
-        </div>
-        <div class="detail-row">
-            <span class="detail-label">Soglia minima</span>
-            <span class="detail-value">${p.threshold} ${p.unit}</span>
-        </div>
-        <div class="detail-row">
-            <span class="detail-label">Scadenza</span>
-            <span class="detail-value card-expiry ${expiryStatus}" style="display:inline-block">
-                ${getExpiryLabel(p.expiry)}
-            </span>
-        </div>
-        ${p.barcode ? `<div class="detail-row">
-            <span class="detail-label">Barcode</span>
-            <span class="detail-value">🔖 ${p.barcode}</span>
-        </div>` : ''}
-        ${p.notes ? `<div class="detail-row">
-            <span class="detail-label">Note</span>
-            <span class="detail-value">${p.notes}</span>
-        </div>` : ''}
+
+    let rows = `
+        <div class="detail-row"><span class="detail-label">Quantità</span>
+            <span class="detail-value">${p.qty} ${p.unit}</span></div>
+        <div class="detail-row"><span class="detail-label">Soglia minima</span>
+            <span class="detail-value">${p.threshold} ${p.unit}</span></div>
     `;
+    if (p.expiry) rows += `
+        <div class="detail-row"><span class="detail-label">Scadenza</span>
+            <span class="detail-value">${formatDate(p.expiry)}</span></div>
+    `;
+    if (p.notes) rows += `
+        <div class="detail-row"><span class="detail-label">Note</span>
+            <span class="detail-value">${p.notes}</span></div>
+    `;
+    rows += `
+        <div class="detail-row"><span class="detail-label">Aggiornato</span>
+            <span class="detail-value">${p.updatedAt ? new Date(p.updatedAt).toLocaleDateString('it-IT') : '-'}</span></div>
+    `;
+    document.getElementById('detail-rows').innerHTML = rows;
     document.getElementById('detail-modal').classList.add('active');
 }
 
@@ -905,8 +810,6 @@ function editFromDetail() {
     if (!p) return;
     closeDetail();
     editingId = p.id;
-    scannedBarcode = p.barcode || '';
-    selectedEmoji = p.emoji;
     document.getElementById('add-modal-title').textContent = '✏️ Modifica Prodotto';
     document.getElementById('input-name').value = p.name;
     document.getElementById('input-category').value = p.category;
@@ -915,134 +818,111 @@ function editFromDetail() {
     document.getElementById('input-expiry').value = p.expiry || '';
     document.getElementById('input-threshold').value = p.threshold;
     document.getElementById('input-notes').value = p.notes || '';
-    if (p.barcode) {
-        document.getElementById('barcode-found-box').style.display = 'block';
-        document.getElementById('barcode-found-code').textContent = p.barcode;
-        document.getElementById('barcode-found-name').textContent = p.name;
-        document.getElementById('barcode-found-brand').textContent = '';
-        document.getElementById('barcode-found-emoji').textContent = p.emoji;
-    } else {
-        document.getElementById('barcode-found-box').style.display = 'none';
-    }
+    document.getElementById('barcode-found-box').style.display = 'none';
+    selectedEmoji = p.emoji || '📦';
     renderEmojiGrid();
     document.getElementById('add-modal').classList.add('active');
 }
 
-function deleteFromDetail() {
-    if (!detailId) return;
-    const p = products.find(x => x.id === detailId);
-    if (!confirm(`Eliminare "${p?.name}"?`)) return;
-    products = products.filter(x => x.id !== detailId);
-    saveData();
-    renderCategoryTabs();
-    renderProducts();
-    updateStats();
-    checkNotifications();
+async function deleteFromDetail() {
+    if (!confirm('Eliminare questo prodotto?')) return;
+    products = products.filter(p => p.id !== detailId);
     closeDetail();
-    showToast('🗑️ Prodotto eliminato', 'error');
+    showToast('🗑️ Prodotto eliminato', 'success');
+    renderAll();
+    await saveToJsonBin();
 }
 
 // ========== SCANNER ==========
-function openScanner() {
+async function openScanner() {
+    closeAddModal();
     document.getElementById('scanner-modal').classList.add('active');
-    setTimeout(startQuagga, 300);
+    document.getElementById('scanner-status').textContent = '📷 Avvio fotocamera...';
+    document.getElementById('scanner-status').className = 'scanner-status loading';
+
+    try {
+        codeReader = new ZXing.BrowserMultiFormatReader();
+        const devices = await ZXing.BrowserMultiFormatReader.listVideoInputDevices();
+
+        if (!devices || devices.length === 0) throw new Error('Nessuna fotocamera trovata');
+
+        const backCamera = devices.find(d =>
+            d.label.toLowerCase().includes('back') ||
+            d.label.toLowerCase().includes('posterior') ||
+            d.label.toLowerCase().includes('rear') ||
+            d.label.toLowerCase().includes('environment')
+        ) || devices[devices.length - 1];
+
+        document.getElementById('scanner-status').textContent = '🔍 Inquadra il codice a barre...';
+        document.getElementById('scanner-status').className = 'scanner-status';
+
+        await codeReader.decodeFromVideoDevice(
+            backCamera?.deviceId || undefined,
+            'scanner-video',
+            async (result, err) => {
+                if (result) {
+                    const barcode = result.getText();
+                    await handleBarcodeResult(barcode);
+                }
+            }
+        );
+    } catch(err) {
+        document.getElementById('scanner-status').textContent = `❌ ${err.message}`;
+        document.getElementById('scanner-status').className = 'scanner-status error';
+    }
 }
 
 function closeScanner() {
-    stopQuagga();
+    if (codeReader) {
+        codeReader.reset();
+        codeReader = null;
+    }
     document.getElementById('scanner-modal').classList.remove('active');
 }
 
-function startQuagga() {
-    if (scannerRunning) return;
-    Quagga.init({
-        inputStream: {
-            name: 'Live',
-            type: 'LiveStream',
-            target: document.getElementById('scanner-area'),
-            constraints: {
-                facingMode: 'environment',
-                width: { ideal: 1280 },
-                height: { ideal: 720 }
-            }
-        },
-        decoder: {
-            readers: ['ean_reader','ean_8_reader','code_128_reader',
-                      'code_39_reader','upc_reader','upc_e_reader']
-        },
-        locate: true
-    }, function(err) {
-        if (err) {
-            document.getElementById('scanner-status').textContent = '❌ Fotocamera non disponibile';
-            return;
-        }
-        Quagga.start();
-        scannerRunning = true;
-        document.getElementById('scanner-status').textContent = '📷 Inquadra il codice a barre';
-    });
-    Quagga.onDetected(onBarcodeDetected);
-}
+async function handleBarcodeResult(code) {
+    document.getElementById('scanner-status').textContent = `✅ Codice: ${code} - Ricerca...`;
+    document.getElementById('scanner-status').className = 'scanner-status';
 
-function stopQuagga() {
-    if (!scannerRunning) return;
-    Quagga.offDetected(onBarcodeDetected);
-    Quagga.stop();
-    scannerRunning = false;
-}
+    if (codeReader) { codeReader.reset(); codeReader = null; }
 
-let lastBarcode = '';
-let barcodeCount = 0;
-
-function onBarcodeDetected(result) {
-    const code = result.codeResult.code;
-    if (code === lastBarcode) {
-        barcodeCount++;
-    } else {
-        lastBarcode = code;
-        barcodeCount = 1;
-    }
-    if (barcodeCount < 3) return;
-    barcodeCount = 0;
-    lastBarcode = '';
-    stopQuagga();
-    document.getElementById('scanner-status').textContent = `✅ Codice: ${code}`;
-    lookupBarcode(code);
-}
-
-async function lookupBarcode(code) {
-    document.getElementById('scanner-status').textContent = '🔍 Ricerca prodotto...';
     try {
         const res = await fetch(`https://world.openfoodfacts.org/api/v0/product/${code}.json`);
         const data = await res.json();
+
         if (data.status === 1) {
-            const prod = data.product;
-            const name = prod.product_name_it || prod.product_name || prod.abbreviated_product_name || '';
-            const brand = prod.brands || '';
-            const tags = prod.categories_tags || [];
-            const category = mapCategory(tags);
-            const emoji = categoryEmoji(category);
-            document.getElementById('scanner-status').textContent = `✅ Trovato: ${name || code}`;
-            scannedBarcode = code;
-            setTimeout(() => {
-                document.getElementById('scanner-modal').classList.remove('active');
-                fillFormFromBarcode(name, brand, category, emoji, code);
-            }, 800);
+            const p = data.product;
+            const name = p.product_name_it || p.product_name || p.generic_name || '';
+            const brand = p.brands || '';
+            const cat = mapCategory(p.categories_tags || []);
+            const emoji = CATEGORY_EMOJIS[cat] || '📦';
+            closeScanner();
+            fillFormFromBarcode(name, brand, cat, emoji, code);
         } else {
-            scannedBarcode = code;
-            document.getElementById('scanner-status').textContent = `⚠️ Codice ${code} non trovato.`;
-            setTimeout(() => {
-                document.getElementById('scanner-modal').classList.remove('active');
-                fillFormFromBarcode('', '', '📦 Altro', '📦', code);
-            }, 1500);
+            closeScanner();
+            fillFormFromBarcode('', '', '📦 Altro', '📦', code);
+            showToast('⚠️ Prodotto non trovato nel DB', 'warning');
         }
     } catch(e) {
-        scannedBarcode = code;
-        document.getElementById('scanner-status').textContent = `⚠️ Offline. Codice salvato: ${code}`;
-        setTimeout(() => {
-            document.getElementById('scanner-modal').classList.remove('active');
-            fillFormFromBarcode('', '', '📦 Altro', '📦', code);
-        }, 1500);
+        closeScanner();
+        fillFormFromBarcode('', '', '📦 Altro', '📦', code);
+        showToast('⚠️ Offline - compila manualmente', 'warning');
     }
+}
+
+function mapCategory(tags) {
+    const t = tags.join(' ').toLowerCase();
+    if (t.includes('pasta') || t.includes('rice') || t.includes('riso')) return '🍝 Pasta & Riso';
+    if (t.includes('conserv') || t.includes('canned')) return '🥫 Conserve';
+    if (t.includes('milk') || t.includes('latte') || t.includes('dairy')) return '🥛 Latticini';
+    if (t.includes('meat') || t.includes('carne') || t.includes('fish') || t.includes('pesce')) return '🥩 Carne & Pesce';
+    if (t.includes('fruit') || t.includes('vegetable') || t.includes('frutta') || t.includes('verdura')) return '🥦 Frutta & Verdura';
+    if (t.includes('sweet') || t.includes('snack') || t.includes('dolci') || t.includes('biscuit')) return '🧁 Dolci & Snack';
+    if (t.includes('drink') || t.includes('beverage') || t.includes('bevanda') || t.includes('juice')) return '🧃 Bevande';
+    if (t.includes('bread') || t.includes('pane') || t.includes('cereal')) return '🍞 Pane & Cereali';
+    if (t.includes('sauce') || t.includes('condiment') || t.includes('oil') || t.includes('olio')) return '🫙 Condimenti';
+    if (t.includes('frozen') || t.includes('surgelat')) return '🧊 Surgelati';
+    return '📦 Altro';
 }
 
 function fillFormFromBarcode(name, brand, category, emoji, code) {
@@ -1050,7 +930,7 @@ function fillFormFromBarcode(name, brand, category, emoji, code) {
     if (category) document.getElementById('input-category').value = category;
     selectedEmoji = emoji;
     renderEmojiGrid();
-    document.getElementById('barcode-found-box').style.display = 'block';
+    document.getElementById('barcode-found-box').style.display = 'flex';
     document.getElementById('barcode-found-name').textContent = name || 'Prodotto sconosciuto';
     document.getElementById('barcode-found-brand').textContent = brand || '';
     document.getElementById('barcode-found-emoji').textContent = emoji;
@@ -1058,105 +938,88 @@ function fillFormFromBarcode(name, brand, category, emoji, code) {
     document.getElementById('add-modal').classList.add('active');
 }
 
-function mapCategory(tags) {
-    const t = tags.join(' ').toLowerCase();
-    if (t.includes('pasta') || t.includes('rice') || t.includes('riso')) return '🍝 Pasta & Riso';
-    if (t.includes('dairy') || t.includes('milk') || t.includes('latte') || t.includes('cheese')) return '🥛 Latticini';
-    if (t.includes('meat') || t.includes('carne') || t.includes('fish') || t.includes('pesce')) return '🥩 Carne & Pesce';
-    if (t.includes('beverage') || t.includes('drink') || t.includes('juice')) return '🧃 Bevande';
-    if (t.includes('sweet') || t.includes('chocolate') || t.includes('biscuit')) return '🧁 Dolci & Snack';
-    if (t.includes('bread') || t.includes('cereal') || t.includes('pane')) return '🍞 Pane & Cereali';
-    if (t.includes('vegetable') || t.includes('fruit') || t.includes('verdura')) return '🥦 Frutta & Verdura';
-    if (t.includes('sauce') || t.includes('condiment') || t.includes('salsa')) return '🫙 Condimenti';
-    if (t.includes('frozen') || t.includes('surgelat')) return '🧊 Surgelati';
-    if (t.includes('canned') || t.includes('conserv')) return '🥫 Conserve';
-    return '📦 Altro';
-}
-
-function categoryEmoji(cat) { return cat.split(' ')[0] || '📦'; }
-
 // ========== NOTIFICHE ==========
-function requestNotificationPermission() {
-    if ('Notification' in window && Notification.permission === 'default') {
-        Notification.requestPermission();
-    }
-}
-
 function checkNotifications() {
-    const expired = products.filter(p => getExpiryStatus(p.expiry) === 'expired');
-    const expiring = products.filter(p => getExpiryStatus(p.expiry) === 'expiring');
-    const low = products.filter(p => p.qty <= p.threshold && p.qty > 0);
+    const today = new Date(); today.setHours(0,0,0,0);
+    const in7 = new Date(today); in7.setDate(in7.getDate()+7);
+    const list = document.getElementById('notif-list');
+    let items = '';
+    let count = 0;
 
-    let html = '';
-    expired.forEach(p => {
-        html += `<div class="notif-item danger">
-            🔴 <strong>${p.emoji} ${p.name}</strong> — ${getExpiryLabel(p.expiry)}
-        </div>`;
+    products.forEach(p => {
+        if (p.expiry) {
+            const d = new Date(p.expiry);
+            if (d < today) {
+                items += `<div class="notif-item danger">❌ <b>${p.name}</b> è scaduto il ${formatDate(p.expiry)}</div>`;
+                count++;
+            } else if (d <= in7) {
+                const days = Math.ceil((d-today)/(1000*60*60*24));
+                items += `<div class="notif-item warning">⚠️ <b>${p.name}</b> scade tra ${days} giorni</div>`;
+                count++;
+            }
+        }
+        if (p.qty <= p.threshold) {
+            items += `<div class="notif-item info">📉 <b>${p.name}</b> - scorte basse (${p.qty} ${p.unit})</div>`;
+            count++;
+        }
     });
-    expiring.forEach(p => {
-        html += `<div class="notif-item warning">
-            🟡 <strong>${p.emoji} ${p.name}</strong> — ${getExpiryLabel(p.expiry)}
-        </div>`;
-    });
-    low.forEach(p => {
-        html += `<div class="notif-item info">
-            🔵 <strong>${p.emoji} ${p.name}</strong> — Scorta bassa (${p.qty} ${p.unit})
-        </div>`;
-    });
-    if (!html) html = `<div class="notif-item">✅ Tutto ok! Nessun avviso.</div>`;
-    document.getElementById('notif-list').innerHTML = html;
-    updateStats();
-    sendPushNotifications(expired, expiring, low);
-}
 
-function sendPushNotifications(expired, expiring, low) {
-    if (!('Notification' in window) || Notification.permission !== 'granted') return;
-    const key = 'last_notif_' + new Date().toDateString();
-    if (localStorage.getItem(key)) return;
-    localStorage.setItem(key, '1');
-    if (expired.length > 0) {
-        new Notification('🏠 Dispensa - Prodotti scaduti', {
-            body: expired.map(p => p.name).join(', ')
-        });
-    }
-    if (expiring.length > 0) {
-        setTimeout(() => new Notification('🏠 Dispensa - In scadenza', {
-            body: expiring.map(p => p.name).join(', ')
-        }), 1000);
-    }
-    if (low.length > 0) {
-        setTimeout(() => new Notification('🏠 Dispensa - Scorte basse', {
-            body: low.map(p => p.name).join(', ')
-        }), 2000);
-    }
+    list.innerHTML = items || '<div class="notif-item">✅ Tutto ok!</div>';
+    const btn = document.getElementById('notif-btn');
+    btn.textContent = count > 0 ? `🔔 ${count}` : '🔔';
 }
 
 function toggleNotifPanel() {
     document.getElementById('notif-panel').classList.toggle('visible');
 }
 
-// ========== TOAST ==========
-function showToast(msg, type = '') {
+// ========== EXPORT ==========
+function exportData() {
+    const blob = new Blob([JSON.stringify({ products }, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `dispensa_${new Date().toISOString().split('T')[0]}.json`;
+    a.click();
+    showToast('📤 Export completato!', 'success');
+}
+
+// ========== UTILS ==========
+function formatDate(s) {
+    if (!s) return '';
+    const [y,m,d] = s.split('-');
+    return `${d}/${m}/${y}`;
+}
+
+function showSyncBar(msg) {
+    const bar = document.getElementById('sync-bar');
+    bar.textContent = msg;
+    bar.style.display = 'block';
+    document.querySelector('.header').style.marginTop = '36px';
+}
+
+function hideSyncBar() {
+    document.getElementById('sync-bar').style.display = 'none';
+    document.querySelector('.header').style.marginTop = '0';
+}
+
+let toastTimer;
+function showToast(msg, type='info') {
     const t = document.getElementById('toast');
     t.textContent = msg;
     t.className = `toast ${type} show`;
-    setTimeout(() => t.classList.remove('show'), 3000);
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
 }
 
-// ========== EXPORT ==========
-function exportData() {
-    const data = JSON.stringify(products, null, 2);
-    const blob = new Blob([data], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `dispensa_${new Date().toISOString().split('T')[0]}.json`;
-    a.click();
-    showToast('📤 Dati esportati!', 'success');
-}
-
-// ========== START ==========
-init();
+// Click fuori modal per chiuderli
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+    overlay.addEventListener('click', e => {
+        if (e.target === overlay) {
+            overlay.classList.remove('active');
+            if (overlay.id === 'scanner-modal') closeScanner();
+        }
+    });
+});
 </script>
 </body>
 </html>
