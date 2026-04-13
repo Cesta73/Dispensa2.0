@@ -1,3 +1,6 @@
+Ecco il codice completo in 3 parti. Copia nell'ordine e incolla tutto in un unico file index.html.
+
+PARTE 1 di 3
 <!DOCTYPE html>
 <html lang="it">
 <head>
@@ -28,98 +31,76 @@
             background:var(--background); color:var(--text-primary);
             min-height:100vh; overflow-x:hidden;
         }
-
-        /* LOGIN SCREEN */
-        .login-screen {
-            position:fixed; inset:0; background:var(--primary);
-            display:flex; flex-direction:column;
-            align-items:center; justify-content:center;
-            z-index:9999; padding:40px 24px;
-        }
-        .login-screen.hidden { display:none; }
-        .login-logo { font-size:72px; margin-bottom:16px; }
-        .login-title { color:white; font-size:28px; font-weight:700; margin-bottom:8px; }
-        .login-subtitle { color:rgba(255,255,255,0.8); font-size:15px; margin-bottom:40px; }
-        .login-card {
-            background:white; border-radius:20px; padding:28px 24px;
-            width:100%; max-width:360px; box-shadow:var(--shadow-lg);
-        }
-        .login-label { font-size:13px; font-weight:600; color:var(--text-secondary); margin-bottom:8px; display:block; }
-        .login-input {
-            width:100%; padding:14px 16px; border:2px solid var(--border);
-            border-radius:var(--radius); font-size:18px; font-weight:700;
-            letter-spacing:2px; text-transform:uppercase; text-align:center;
-            outline:none; margin-bottom:16px;
-        }
-        .login-input:focus { border-color:var(--primary); }
-        .login-btn {
-            width:100%; padding:14px; background:var(--primary); color:white;
-            border:none; border-radius:var(--radius); font-size:16px;
-            font-weight:700; cursor:pointer;
-        }
-        .login-error {
-            color:var(--danger); font-size:13px; text-align:center;
-            margin-top:12px; min-height:20px;
-        }
-
         /* SYNC BAR */
         .sync-bar {
             position:fixed; top:0; left:0; right:0; height:36px;
-            background:var(--primary-dark); color:white;
-            display:flex; align-items:center; justify-content:center;
-            font-size:13px; font-weight:500; z-index:200; display:none;
+            background:var(--warning); color:white;
+            display:none; align-items:center; justify-content:center;
+            font-size:13px; font-weight:600; z-index:500;
         }
         /* HEADER */
         .header {
-            position:sticky; top:0; z-index:100;
-            background:var(--primary); color:white;
-            padding:12px 16px 8px; box-shadow:var(--shadow);
+            position:sticky; top:0; z-index:300;
+            background:var(--primary);
+            padding:12px 16px 8px;
+            box-shadow:var(--shadow-lg);
         }
-        .header-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
-        .header-title { font-size:20px; font-weight:700; }
+        .header-top {
+            display:flex; align-items:center;
+            justify-content:space-between; margin-bottom:10px;
+        }
+        .header-title { color:white; font-size:20px; font-weight:700; }
         .header-actions { display:flex; gap:8px; }
         .header-btn {
             background:rgba(255,255,255,0.2); border:none; color:white;
-            width:38px; height:38px; border-radius:50%; font-size:18px;
+            width:38px; height:38px; border-radius:50%; font-size:16px;
             cursor:pointer; display:flex; align-items:center; justify-content:center;
         }
         .search-container {
-            display:flex; align-items:center; background:rgba(255,255,255,0.95);
-            border-radius:25px; padding:8px 14px; gap:8px;
+            position:relative; display:flex; align-items:center;
         }
-        .search-icon { font-size:16px; }
-        .search-input { border:none; outline:none; flex:1; font-size:15px; background:transparent; color:var(--text-primary); }
-
+        .search-icon {
+            position:absolute; left:12px; font-size:16px; z-index:1;
+        }
+        .search-input {
+            width:100%; padding:10px 16px 10px 38px;
+            border:none; border-radius:25px;
+            font-size:15px; background:rgba(255,255,255,0.95);
+            outline:none;
+        }
         /* STATS BAR */
         .stats-bar {
-            display:flex; gap:8px; padding:12px 16px; overflow-x:auto;
-            background:white; border-bottom:1px solid var(--border);
+            display:flex; gap:8px; padding:12px 16px;
+            overflow-x:auto; -webkit-overflow-scrolling:touch;
+            scrollbar-width:none;
         }
         .stats-bar::-webkit-scrollbar { display:none; }
         .stat-chip {
-            flex-shrink:0; padding:6px 12px; border-radius:20px;
+            flex-shrink:0; padding:6px 14px; border-radius:20px;
             font-size:13px; font-weight:600; cursor:pointer;
-            background:#F5F5F5; color:var(--text-secondary);
-            display:flex; align-items:center; gap:4px; white-space:nowrap;
+            background:white; box-shadow:var(--shadow);
+            border:2px solid transparent; white-space:nowrap;
+            transition:all 0.2s;
         }
         .stat-chip.active.all { background:var(--primary); color:white; }
         .stat-chip.active.expired { background:var(--danger); color:white; }
         .stat-chip.active.expiring { background:var(--warning); color:white; }
         .stat-chip.active.low { background:var(--info); color:white; }
-
         /* CATEGORY TABS */
         .category-tabs {
-            display:flex; gap:8px; padding:10px 16px; overflow-x:auto;
-            background:white; border-bottom:1px solid var(--border);
+            display:flex; gap:8px; padding:0 16px 12px;
+            overflow-x:auto; -webkit-overflow-scrolling:touch;
+            scrollbar-width:none;
         }
         .category-tabs::-webkit-scrollbar { display:none; }
         .cat-tab {
-            flex-shrink:0; padding:6px 14px; border-radius:20px; font-size:13px;
-            font-weight:600; cursor:pointer; background:#F5F5F5;
-            color:var(--text-secondary); border:2px solid transparent; transition:all 0.2s;
+            flex-shrink:0; padding:6px 14px; border-radius:20px;
+            font-size:13px; font-weight:600; cursor:pointer;
+            background:white; box-shadow:var(--shadow);
+            color:var(--text-secondary);
+            border:2px solid transparent; transition:all 0.2s;
         }
         .cat-tab.active { background:var(--primary); color:white; }
-
         /* PRODUCTS GRID */
         .products-container { padding:16px; }
         .products-grid {
@@ -143,67 +124,59 @@
             display:-webkit-box; -webkit-line-clamp:2;
             -webkit-box-orient:vertical; overflow:hidden;
         }
-        .card-category { font-size:11px; color:var(--text-secondary); text-align:center; margin-bottom:8px; }
+        .card-category {
+            font-size:11px; color:var(--text-secondary);
+            text-align:center; margin-bottom:8px;
+        }
         .card-quantity {
             display:flex; align-items:center; justify-content:center; gap:8px;
         }
         .qty-btn {
-            width:28px; height:28px; border-radius:50%; border:none;
-            font-size:18px; cursor:pointer; display:flex;
-            align-items:center; justify-content:center; font-weight:700;
+            width:28px; height:28px; border-radius:50%;
+            border:none; font-size:16px; font-weight:700;
+            cursor:pointer; display:flex; align-items:center; justify-content:center;
+            background:var(--primary); color:white; transition:all 0.15s;
         }
-        .qty-btn.minus { background:#FFEBEE; color:var(--danger); }
-        .qty-btn.plus { background:#E8F5E9; color:var(--primary); }
-        .qty-value { font-size:16px; font-weight:700; min-width:30px; text-align:center; }
-        .card-expiry { font-size:11px; text-align:center; margin-top:6px; }
-        .card-expiry.expired { color:var(--danger); font-weight:700; }
-        .card-expiry.expiring { color:var(--warning); font-weight:700; }
-        .card-expiry.ok { color:var(--primary); }
-        .status-badge {
-            position:absolute; top:8px; right:8px;
-            font-size:14px; line-height:1;
+        .qty-btn.minus { background:var(--danger); }
+        .qty-num { font-size:16px; font-weight:700; min-width:24px; text-align:center; }
+        .card-expiry {
+            font-size:11px; text-align:center; margin-top:6px;
+            padding:3px 8px; border-radius:10px; font-weight:600;
         }
-
-        /* LOADING */
-        .loading-spinner {
-            width:40px; height:40px; border:3px solid var(--border);
-            border-top-color:var(--primary); border-radius:50%;
-            animation:spin 0.8s linear infinite; margin:60px auto;
-        }
-        @keyframes spin { to { transform:rotate(360deg); } }
-
+        .card-expiry.expired { background:#FFEBEE; color:var(--danger); }
+        .card-expiry.expiring { background:#FFF8E1; color:var(--warning); }
+        .card-expiry.ok { background:#E8F5E9; color:var(--primary); }
         /* FAB */
         .fab {
             position:fixed; bottom:24px; right:24px;
             width:60px; height:60px; border-radius:50%;
-            background:var(--primary); color:white; border:none;
-            font-size:28px; cursor:pointer; box-shadow:var(--shadow-lg);
+            background:var(--primary); color:white;
+            font-size:32px; border:none; cursor:pointer;
+            box-shadow:var(--shadow-lg); z-index:200;
             display:flex; align-items:center; justify-content:center;
             transition:transform 0.2s;
         }
-        .fab:active { transform:scale(0.9); }
-
+        .fab:active { transform:scale(0.92); }
         /* MODAL */
         .modal-overlay {
-            position:fixed; inset:0; z-index:300;
-            background:rgba(0,0,0,0.5);
-            display:flex; align-items:flex-end; justify-content:center;
-            opacity:0; pointer-events:none; transition:opacity 0.3s;
+            position:fixed; inset:0; background:rgba(0,0,0,0.5);
+            z-index:600; display:none; align-items:flex-end;
+            justify-content:center;
         }
-        .modal-overlay.active { opacity:1; pointer-events:all; }
+        .modal-overlay.active { display:flex; }
         .modal {
-            background:white; border-radius:20px 20px 0 0;
-            padding:20px 20px 40px; width:100%; max-width:600px;
+            background:white; border-radius:24px 24px 0 0;
+            padding:20px 20px 40px; width:100%; max-width:480px;
             max-height:90vh; overflow-y:auto;
-            transform:translateY(100%); transition:transform 0.3s;
         }
-        .modal-overlay.active .modal { transform:translateY(0); }
-        .modal-handle { width:40px; height:4px; background:#DDD; border-radius:2px; margin:0 auto 16px; }
+        .modal-handle {
+            width:40px; height:4px; background:var(--border);
+            border-radius:2px; margin:0 auto 16px;
+        }
         .modal-title { font-size:20px; font-weight:700; margin-bottom:16px; }
-
         /* FORM */
         .form-group { margin-bottom:14px; }
-        .form-label { display:block; font-size:13px; font-weight:600; margin-bottom:6px; color:var(--text-secondary); }
+        .form-label { font-size:13px; font-weight:600; color:var(--text-secondary); display:block; margin-bottom:6px; }
         .form-input {
             width:100%; padding:12px 14px; border:2px solid var(--border);
             border-radius:var(--radius-sm); font-size:15px; outline:none;
@@ -211,86 +184,94 @@
         }
         .form-input:focus { border-color:var(--primary); }
         .form-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
-
         /* EMOJI GRID */
-        .emoji-grid { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:14px; }
-        .emoji-option {
-            width:44px; height:44px; border-radius:var(--radius-sm);
-            border:2px solid var(--border); display:flex;
+        .emoji-grid {
+            display:grid; grid-template-columns:repeat(8,1fr);
+            gap:6px; margin-top:6px;
+        }
+        .emoji-btn {
+            aspect-ratio:1; border:2px solid transparent;
+            border-radius:8px; font-size:22px; cursor:pointer;
+            background:var(--background); display:flex;
             align-items:center; justify-content:center;
-            font-size:24px; cursor:pointer; transition:all 0.2s;
+            transition:all 0.15s;
         }
-        .emoji-option.selected { border-color:var(--primary); background:#E8F5E9; }
-
-        /* BTN */
-        .btn {
-            width:100%; padding:14px; border:none; border-radius:var(--radius);
-            font-size:15px; font-weight:700; cursor:pointer; margin-bottom:10px;
-            transition:opacity 0.2s;
-        }
-        .btn:active { opacity:0.8; }
-        .btn-primary { background:var(--primary); color:white; }
-        .btn-secondary { background:#F5F5F5; color:var(--text-primary); }
-        .btn-danger { background:var(--danger); color:white; }
-        .btn-info { background:var(--info); color:white; }
-
+        .emoji-btn.selected { border-color:var(--primary); background:var(--primary-light); }
         /* BARCODE BOX */
         .barcode-found-box {
             display:flex; align-items:center; gap:12px;
             background:#E8F5E9; border-radius:var(--radius);
             padding:12px 14px; margin-bottom:14px;
+            border:2px solid var(--primary-light);
         }
         .barcode-found-emoji { font-size:36px; }
         .barcode-found-name { font-weight:700; font-size:15px; }
         .barcode-found-brand { font-size:13px; color:var(--text-secondary); }
         .barcode-found-code { font-size:11px; color:var(--text-secondary); font-family:monospace; }
-
+        /* BUTTONS */
+        .btn {
+            width:100%; padding:14px; border:none; border-radius:var(--radius);
+            font-size:16px; font-weight:600; cursor:pointer;
+            margin-bottom:10px; transition:all 0.2s;
+        }
+        .btn-primary { background:var(--primary); color:white; }
+        .btn-secondary { background:var(--background); color:var(--text-primary); }
+        .btn-danger { background:var(--danger); color:white; }
+        .btn-info { background:var(--info); color:white; }
+        /* LOADING */
+        .loading-spinner {
+            width:40px; height:40px; border:4px solid var(--border);
+            border-top-color:var(--primary); border-radius:50%;
+            animation:spin 0.8s linear infinite; margin:60px auto;
+        }
+        @keyframes spin { to { transform:rotate(360deg); } }
+        /* DETAIL */
+        .detail-emoji { font-size:72px; text-align:center; margin-bottom:8px; }
+        .detail-name { font-size:22px; font-weight:700; text-align:center; margin-bottom:4px; }
+        .detail-category { font-size:14px; color:var(--text-secondary); text-align:center; margin-bottom:20px; }
+        .detail-row {
+            display:flex; justify-content:space-between; align-items:center;
+            padding:12px 0; border-bottom:1px solid var(--border); font-size:15px;
+        }
+        .detail-row:last-child { border-bottom:none; }
+        .detail-label { color:var(--text-secondary); }
+        .detail-value { font-weight:600; }
+        .detail-actions { display:flex; gap:10px; margin-top:20px; }
+        .detail-actions .btn { margin-bottom:0; }
         /* SCANNER */
         .scanner-container {
-            width:100%; height:240px; background:#000;
-            border-radius:var(--radius); overflow:hidden; position:relative;
-            margin-bottom:14px;
+            width:100%; height:260px; background:#000;
+            border-radius:var(--radius); overflow:hidden;
+            position:relative; margin-bottom:16px;
         }
         .scanner-overlay {
             position:absolute; inset:0; display:flex;
-            align-items:center; justify-content:center;
+            align-items:center; justify-content:center; pointer-events:none;
         }
         .scanner-frame {
-            width:200px; height:120px; border:3px solid #4CAF50;
-            border-radius:8px;
+            width:200px; height:120px; border:3px solid white;
+            border-radius:12px; box-shadow:0 0 0 9999px rgba(0,0,0,0.4);
         }
         .scanner-line {
             position:absolute; width:180px; height:2px;
-            background:rgba(76,175,80,0.8);
-            animation:scan 2s linear infinite;
+            background:var(--primary-light); animation:scan 2s linear infinite;
         }
         @keyframes scan {
-            0% { top:calc(50% - 55px); }
-            100% { top:calc(50% + 55px); }
+            0% { transform:translateY(-50px); }
+            100% { transform:translateY(50px); }
         }
         .scanner-status {
-            text-align:center; font-size:14px; color:var(--text-secondary);
-            margin-bottom:14px; min-height:20px;
+            text-align:center; padding:10px; font-size:14px;
+            font-weight:600; margin-bottom:12px; border-radius:var(--radius-sm);
+            background:var(--background);
         }
-
-        /* DETAIL */
-        .detail-emoji { font-size:64px; text-align:center; margin-bottom:8px; }
-        .detail-name { font-size:22px; font-weight:700; text-align:center; margin-bottom:4px; }
-        .detail-category { font-size:14px; color:var(--text-secondary); text-align:center; margin-bottom:16px; }
-        .detail-row {
-            display:flex; justify-content:space-between; align-items:center;
-            padding:10px 0; border-bottom:1px solid var(--border); font-size:14px;
-        }
-        .detail-row-label { color:var(--text-secondary); }
-        .detail-row-value { font-weight:600; }
-        .detail-actions { display:flex; gap:10px; margin-top:16px; }
-        .detail-actions .btn { margin-bottom:0; }
-
-        /* NOTIF PANEL */
+        .scanner-status.error { background:#FFEBEE; color:var(--danger); }
+        /* NOTIFICATION PANEL */
         .notif-panel {
-            position:fixed; top:0; right:0; bottom:0; width:min(320px, 100vw);
-            background:white; z-index:400; box-shadow:var(--shadow-lg);
-            transform:translateX(100%); transition:transform 0.3s; overflow-y:auto;
+            position:fixed; top:0; right:0; bottom:0; width:300px;
+            background:white; z-index:400;
+            box-shadow:var(--shadow-lg); transform:translateX(100%);
+            transition:transform 0.3s; overflow-y:auto;
         }
         .notif-panel.visible { transform:translateX(0); }
         .notif-header {
@@ -298,11 +279,12 @@
             padding:20px 16px; border-bottom:1px solid var(--border);
             font-weight:700; font-size:16px; position:sticky; top:0; background:white;
         }
-        .notif-item { padding:12px 16px; border-bottom:1px solid var(--border); font-size:14px; }
+        .notif-item {
+            padding:12px 16px; border-bottom:1px solid var(--border); font-size:14px;
+        }
         .notif-item.danger { border-left:4px solid var(--danger); }
         .notif-item.warning { border-left:4px solid var(--warning); }
         .notif-item.info { border-left:4px solid var(--info); }
-
         /* TOAST */
         .toast {
             position:fixed; bottom:100px; left:50%;
@@ -317,7 +299,314 @@
         .toast.error { background:var(--danger); }
         .toast.warning { background:var(--warning); }
         .toast.info { background:var(--info); }
+        /* EMPTY STATE */
+        .empty-state { text-align:center; padding:60px 20px; color:var(--text-secondary); }
+        .empty-state-icon { font-size:64px; margin-bottom:16px; display:block; }
+        .empty-state-title { font-size:20px; font-weight:600; margin-bottom:8px; color:var(--text-primary); }
+    </style>
+</head>
+<body>
+    Ecco il codice completo in 3 parti. Copia nell'ordine e incolla tutto in un unico file index.html.
 
+PARTE 1 di 3
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🏠 Dispensa di Casa</title>
+    <meta name="theme-color" content="#2E7D32">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Dispensa">
+    <script src="https://unpkg.com/@zxing/library@0.18.6/umd/index.min.js"></script>
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+        :root {
+            --primary:#2E7D32; --primary-light:#4CAF50; --primary-dark:#1B5E20;
+            --danger:#D32F2F; --danger-light:#EF5350;
+            --warning:#F57F17; --warning-light:#FFB300;
+            --info:#0288D1;
+            --surface:#FFFFFF; --background:#F1F8E9; --card-bg:#FFFFFF;
+            --text-primary:#1A1A1A; --text-secondary:#666666;
+            --border:#E0E0E0;
+            --shadow:0 2px 8px rgba(0,0,0,0.1);
+            --shadow-lg:0 4px 16px rgba(0,0,0,0.15);
+            --radius:12px; --radius-sm:8px;
+        }
+        body {
+            font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+            background:var(--background); color:var(--text-primary);
+            min-height:100vh; overflow-x:hidden;
+        }
+        /* SYNC BAR */
+        .sync-bar {
+            position:fixed; top:0; left:0; right:0; height:36px;
+            background:var(--warning); color:white;
+            display:none; align-items:center; justify-content:center;
+            font-size:13px; font-weight:600; z-index:500;
+        }
+        /* HEADER */
+        .header {
+            position:sticky; top:0; z-index:300;
+            background:var(--primary);
+            padding:12px 16px 8px;
+            box-shadow:var(--shadow-lg);
+        }
+        .header-top {
+            display:flex; align-items:center;
+            justify-content:space-between; margin-bottom:10px;
+        }
+        .header-title { color:white; font-size:20px; font-weight:700; }
+        .header-actions { display:flex; gap:8px; }
+        .header-btn {
+            background:rgba(255,255,255,0.2); border:none; color:white;
+            width:38px; height:38px; border-radius:50%; font-size:16px;
+            cursor:pointer; display:flex; align-items:center; justify-content:center;
+        }
+        .search-container {
+            position:relative; display:flex; align-items:center;
+        }
+        .search-icon {
+            position:absolute; left:12px; font-size:16px; z-index:1;
+        }
+        .search-input {
+            width:100%; padding:10px 16px 10px 38px;
+            border:none; border-radius:25px;
+            font-size:15px; background:rgba(255,255,255,0.95);
+            outline:none;
+        }
+        /* STATS BAR */
+        .stats-bar {
+            display:flex; gap:8px; padding:12px 16px;
+            overflow-x:auto; -webkit-overflow-scrolling:touch;
+            scrollbar-width:none;
+        }
+        .stats-bar::-webkit-scrollbar { display:none; }
+        .stat-chip {
+            flex-shrink:0; padding:6px 14px; border-radius:20px;
+            font-size:13px; font-weight:600; cursor:pointer;
+            background:white; box-shadow:var(--shadow);
+            border:2px solid transparent; white-space:nowrap;
+            transition:all 0.2s;
+        }
+        .stat-chip.active.all { background:var(--primary); color:white; }
+        .stat-chip.active.expired { background:var(--danger); color:white; }
+        .stat-chip.active.expiring { background:var(--warning); color:white; }
+        .stat-chip.active.low { background:var(--info); color:white; }
+        /* CATEGORY TABS */
+        .category-tabs {
+            display:flex; gap:8px; padding:0 16px 12px;
+            overflow-x:auto; -webkit-overflow-scrolling:touch;
+            scrollbar-width:none;
+        }
+        .category-tabs::-webkit-scrollbar { display:none; }
+        .cat-tab {
+            flex-shrink:0; padding:6px 14px; border-radius:20px;
+            font-size:13px; font-weight:600; cursor:pointer;
+            background:white; box-shadow:var(--shadow);
+            color:var(--text-secondary);
+            border:2px solid transparent; transition:all 0.2s;
+        }
+        .cat-tab.active { background:var(--primary); color:white; }
+        /* PRODUCTS GRID */
+        .products-container { padding:16px; }
+        .products-grid {
+            display:grid;
+            grid-template-columns:repeat(auto-fill, minmax(150px, 1fr));
+            gap:12px;
+        }
+        .product-card {
+            background:white; border-radius:var(--radius);
+            padding:14px 12px; cursor:pointer;
+            box-shadow:var(--shadow); border:2px solid transparent;
+            transition:all 0.2s; position:relative;
+        }
+        .product-card.expired { border-color:var(--danger); background:#FFF8F8; }
+        .product-card.expiring { border-color:var(--warning); background:#FFFDE7; }
+        .product-card.low-stock { border-color:var(--info); background:#E3F2FD; }
+        .card-emoji { font-size:36px; display:block; text-align:center; margin-bottom:8px; }
+        .card-name {
+            font-size:14px; font-weight:700; text-align:center;
+            margin-bottom:4px; line-height:1.3;
+            display:-webkit-box; -webkit-line-clamp:2;
+            -webkit-box-orient:vertical; overflow:hidden;
+        }
+        .card-category {
+            font-size:11px; color:var(--text-secondary);
+            text-align:center; margin-bottom:8px;
+        }
+        .card-quantity {
+            display:flex; align-items:center; justify-content:center; gap:8px;
+        }
+        .qty-btn {
+            width:28px; height:28px; border-radius:50%;
+            border:none; font-size:16px; font-weight:700;
+            cursor:pointer; display:flex; align-items:center; justify-content:center;
+            background:var(--primary); color:white; transition:all 0.15s;
+        }
+        .qty-btn.minus { background:var(--danger); }
+        .qty-num { font-size:16px; font-weight:700; min-width:24px; text-align:center; }
+        .card-expiry {
+            font-size:11px; text-align:center; margin-top:6px;
+            padding:3px 8px; border-radius:10px; font-weight:600;
+        }
+        .card-expiry.expired { background:#FFEBEE; color:var(--danger); }
+        .card-expiry.expiring { background:#FFF8E1; color:var(--warning); }
+        .card-expiry.ok { background:#E8F5E9; color:var(--primary); }
+        /* FAB */
+        .fab {
+            position:fixed; bottom:24px; right:24px;
+            width:60px; height:60px; border-radius:50%;
+            background:var(--primary); color:white;
+            font-size:32px; border:none; cursor:pointer;
+            box-shadow:var(--shadow-lg); z-index:200;
+            display:flex; align-items:center; justify-content:center;
+            transition:transform 0.2s;
+        }
+        .fab:active { transform:scale(0.92); }
+        /* MODAL */
+        .modal-overlay {
+            position:fixed; inset:0; background:rgba(0,0,0,0.5);
+            z-index:600; display:none; align-items:flex-end;
+            justify-content:center;
+        }
+        .modal-overlay.active { display:flex; }
+        .modal {
+            background:white; border-radius:24px 24px 0 0;
+            padding:20px 20px 40px; width:100%; max-width:480px;
+            max-height:90vh; overflow-y:auto;
+        }
+        .modal-handle {
+            width:40px; height:4px; background:var(--border);
+            border-radius:2px; margin:0 auto 16px;
+        }
+        .modal-title { font-size:20px; font-weight:700; margin-bottom:16px; }
+        /* FORM */
+        .form-group { margin-bottom:14px; }
+        .form-label { font-size:13px; font-weight:600; color:var(--text-secondary); display:block; margin-bottom:6px; }
+        .form-input {
+            width:100%; padding:12px 14px; border:2px solid var(--border);
+            border-radius:var(--radius-sm); font-size:15px; outline:none;
+            transition:border-color 0.2s; background:white;
+        }
+        .form-input:focus { border-color:var(--primary); }
+        .form-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+        /* EMOJI GRID */
+        .emoji-grid {
+            display:grid; grid-template-columns:repeat(8,1fr);
+            gap:6px; margin-top:6px;
+        }
+        .emoji-btn {
+            aspect-ratio:1; border:2px solid transparent;
+            border-radius:8px; font-size:22px; cursor:pointer;
+            background:var(--background); display:flex;
+            align-items:center; justify-content:center;
+            transition:all 0.15s;
+        }
+        .emoji-btn.selected { border-color:var(--primary); background:var(--primary-light); }
+        /* BARCODE BOX */
+        .barcode-found-box {
+            display:flex; align-items:center; gap:12px;
+            background:#E8F5E9; border-radius:var(--radius);
+            padding:12px 14px; margin-bottom:14px;
+            border:2px solid var(--primary-light);
+        }
+        .barcode-found-emoji { font-size:36px; }
+        .barcode-found-name { font-weight:700; font-size:15px; }
+        .barcode-found-brand { font-size:13px; color:var(--text-secondary); }
+        .barcode-found-code { font-size:11px; color:var(--text-secondary); font-family:monospace; }
+        /* BUTTONS */
+        .btn {
+            width:100%; padding:14px; border:none; border-radius:var(--radius);
+            font-size:16px; font-weight:600; cursor:pointer;
+            margin-bottom:10px; transition:all 0.2s;
+        }
+        .btn-primary { background:var(--primary); color:white; }
+        .btn-secondary { background:var(--background); color:var(--text-primary); }
+        .btn-danger { background:var(--danger); color:white; }
+        .btn-info { background:var(--info); color:white; }
+        /* LOADING */
+        .loading-spinner {
+            width:40px; height:40px; border:4px solid var(--border);
+            border-top-color:var(--primary); border-radius:50%;
+            animation:spin 0.8s linear infinite; margin:60px auto;
+        }
+        @keyframes spin { to { transform:rotate(360deg); } }
+        /* DETAIL */
+        .detail-emoji { font-size:72px; text-align:center; margin-bottom:8px; }
+        .detail-name { font-size:22px; font-weight:700; text-align:center; margin-bottom:4px; }
+        .detail-category { font-size:14px; color:var(--text-secondary); text-align:center; margin-bottom:20px; }
+        .detail-row {
+            display:flex; justify-content:space-between; align-items:center;
+            padding:12px 0; border-bottom:1px solid var(--border); font-size:15px;
+        }
+        .detail-row:last-child { border-bottom:none; }
+        .detail-label { color:var(--text-secondary); }
+        .detail-value { font-weight:600; }
+        .detail-actions { display:flex; gap:10px; margin-top:20px; }
+        .detail-actions .btn { margin-bottom:0; }
+        /* SCANNER */
+        .scanner-container {
+            width:100%; height:260px; background:#000;
+            border-radius:var(--radius); overflow:hidden;
+            position:relative; margin-bottom:16px;
+        }
+        .scanner-overlay {
+            position:absolute; inset:0; display:flex;
+            align-items:center; justify-content:center; pointer-events:none;
+        }
+        .scanner-frame {
+            width:200px; height:120px; border:3px solid white;
+            border-radius:12px; box-shadow:0 0 0 9999px rgba(0,0,0,0.4);
+        }
+        .scanner-line {
+            position:absolute; width:180px; height:2px;
+            background:var(--primary-light); animation:scan 2s linear infinite;
+        }
+        @keyframes scan {
+            0% { transform:translateY(-50px); }
+            100% { transform:translateY(50px); }
+        }
+        .scanner-status {
+            text-align:center; padding:10px; font-size:14px;
+            font-weight:600; margin-bottom:12px; border-radius:var(--radius-sm);
+            background:var(--background);
+        }
+        .scanner-status.error { background:#FFEBEE; color:var(--danger); }
+        /* NOTIFICATION PANEL */
+        .notif-panel {
+            position:fixed; top:0; right:0; bottom:0; width:300px;
+            background:white; z-index:400;
+            box-shadow:var(--shadow-lg); transform:translateX(100%);
+            transition:transform 0.3s; overflow-y:auto;
+        }
+        .notif-panel.visible { transform:translateX(0); }
+        .notif-header {
+            display:flex; justify-content:space-between; align-items:center;
+            padding:20px 16px; border-bottom:1px solid var(--border);
+            font-weight:700; font-size:16px; position:sticky; top:0; background:white;
+        }
+        .notif-item {
+            padding:12px 16px; border-bottom:1px solid var(--border); font-size:14px;
+        }
+        .notif-item.danger { border-left:4px solid var(--danger); }
+        .notif-item.warning { border-left:4px solid var(--warning); }
+        .notif-item.info { border-left:4px solid var(--info); }
+        /* TOAST */
+        .toast {
+            position:fixed; bottom:100px; left:50%;
+            transform:translateX(-50%) translateY(20px);
+            background:#333; color:white; padding:12px 24px;
+            border-radius:25px; font-size:14px; font-weight:500;
+            z-index:9999; opacity:0; transition:all 0.3s;
+            white-space:nowrap; pointer-events:none;
+        }
+        .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+        .toast.success { background:var(--primary); }
+        .toast.error { background:var(--danger); }
+        .toast.warning { background:var(--warning); }
+        .toast.info { background:var(--info); }
         /* EMPTY STATE */
         .empty-state { text-align:center; padding:60px 20px; color:var(--text-secondary); }
         .empty-state-icon { font-size:64px; margin-bottom:16px; display:block; }
@@ -326,33 +615,18 @@
 </head>
 <body>
 
-<!-- LOGIN SCREEN -->
-<div class="login-screen" id="login-screen">
-    <div class="login-logo">🏠</div>
-    <div class="login-title">Dispensa di Casa</div>
-    <div class="login-subtitle">Inserisci il codice della tua famiglia</div>
-    <div class="login-card">
-        <label class="login-label">Codice Famiglia</label>
-        <input class="login-input" type="text" id="login-input"
-               placeholder="ES. CESTA2024"
-               onkeydown="if(event.key==='Enter') doLogin()">
-        <button class="login-btn" onclick="doLogin()">🚀 Accedi</button>
-        <div class="login-error" id="login-error"></div>
-    </div>
-</div>
-
+PARTE 2 di 3
 <!-- SYNC BAR -->
-<div class="sync-bar" id="sync-bar">⏳ Connessione in corso...</div>
+<div class="sync-bar" id="sync-bar">⏳ Sincronizzazione...</div>
 
 <!-- HEADER -->
-<div class="header" style="margin-top:0">
+<div class="header">
     <div class="header-top">
-        <div class="header-title">🏠 <span id="header-family-name">Dispensa</span></div>
+        <div class="header-title">🏠 Dispensa di Casa</div>
         <div class="header-actions">
             <button class="header-btn" onclick="toggleNotifPanel()" id="notif-btn">🔔</button>
             <button class="header-btn" onclick="exportData()">📤</button>
             <button class="header-btn" onclick="loadFromJsonBin()">🔄</button>
-            <button class="header-btn" onclick="doLogout()" title="Cambia famiglia">🚪</button>
         </div>
     </div>
     <div class="search-container">
@@ -412,7 +686,7 @@
         <div class="modal-handle"></div>
         <h2 class="modal-title">📷 Scansiona Barcode</h2>
         <div class="scanner-container">
-            <video id="scanner-video" style="width:100%;height:100%;object-fit:cover;"></video>
+            <video id="scanner-video" style="width:100%;height:100%;object-fit:cover;" playsinline></video>
             <div class="scanner-overlay">
                 <div style="position:relative;display:flex;align-items:center;justify-content:center;">
                     <div class="scanner-frame"></div>
@@ -431,6 +705,7 @@
         <div class="modal-handle"></div>
         <h2 class="modal-title" id="add-modal-title">➕ Aggiungi Prodotto</h2>
 
+        <!-- Barcode found box -->
         <div class="barcode-found-box" id="barcode-found-box" style="display:none">
             <div class="barcode-found-emoji" id="barcode-found-emoji">📦</div>
             <div class="barcode-found-info">
@@ -466,7 +741,7 @@
                 <option>🧴 Igiene Personale</option>
                 <option>💊 Farmaci</option>
                 <option>🐾 Animali</option>
-                <option>📦 Altro</option>
+                <option selected>📦 Altro</option>
             </select>
         </div>
 
@@ -478,14 +753,22 @@
         <div class="form-row">
             <div class="form-group">
                 <label class="form-label">Quantità</label>
-                <input class="form-input" type="number" id="input-qty" placeholder="1" min="0" value="1">
+                <input class="form-input" type="number" id="input-qty"
+                       placeholder="1" min="0" value="1">
             </div>
             <div class="form-group">
                 <label class="form-label">Unità</label>
                 <select class="form-input" id="input-unit">
-                    <option>pz</option><option>kg</option><option>g</option>
-                    <option>L</option><option>ml</option><option>conf</option>
-                    <option>bst</option><option>bot</option><option>latt</option><option>vaso</option>
+                    <option>pz</option>
+                    <option>kg</option>
+                    <option>g</option>
+                    <option>L</option>
+                    <option>ml</option>
+                    <option>conf</option>
+                    <option>bst</option>
+                    <option>bot</option>
+                    <option>latt</option>
+                    <option>vaso</option>
                 </select>
             </div>
         </div>
@@ -497,13 +780,15 @@
             </div>
             <div class="form-group">
                 <label class="form-label">Soglia minima</label>
-                <input class="form-input" type="number" id="input-threshold" placeholder="2" min="0" value="2">
+                <input class="form-input" type="number" id="input-threshold"
+                       placeholder="2" min="0" value="2">
             </div>
         </div>
 
         <div class="form-group">
             <label class="form-label">Note</label>
-            <input class="form-input" type="text" id="input-notes" placeholder="Note opzionali...">
+            <input class="form-input" type="text" id="input-notes"
+                   placeholder="Note opzionali...">
         </div>
 
         <button class="btn btn-primary" onclick="saveProduct()">💾 Salva Prodotto</button>
@@ -520,18 +805,20 @@
         <div class="detail-category" id="detail-category"></div>
         <div id="detail-rows"></div>
         <div class="detail-actions">
-            <button class="btn btn-primary" style="margin-bottom:0" onclick="editFromDetail()">✏️ Modifica</button>
-            <button class="btn btn-danger" style="margin-bottom:0" onclick="deleteFromDetail()">🗑️ Elimina</button>
+            <button class="btn btn-primary" style="margin-bottom:0"
+                    onclick="editFromDetail()">✏️ Modifica</button>
+            <button class="btn btn-danger" style="margin-bottom:0"
+                    onclick="deleteFromDetail()">🗑️ Elimina</button>
         </div>
-        <button class="btn btn-secondary" style="margin-top:10px" onclick="closeDetail()">Chiudi</button>
+        <button class="btn btn-secondary" style="margin-top:10px"
+                onclick="closeDetail()">Chiudi</button>
     </div>
 </div>
-
 <script>
 // ========== CONFIG ==========
-const MASTER_BIN_ID = '69dcb182aaba882197f2d83f';
-const MASTER_KEY    = '$2a$10$yAkIzU6bBTdv7q33Aj7CKe7QrQJcpq1UjR77JTuxJibH4EA.41vT.';
-const BASE_URL      = 'https://api.jsonbin.io/v3/b';
+const BIN_ID = '69dcb182aaba882197f2d83f';
+const API_KEY = '$2a$10$yAkIzU6bBTdv7q33Aj7CKe7QrQJcpq1UjR77JTuxJibH4EA.41vT.';
+const BASE_URL = 'https://api.jsonbin.io/v3/b';
 
 // ========== STATE ==========
 let products = [];
@@ -541,8 +828,6 @@ let currentCategory = 'all';
 let selectedEmoji = '📦';
 let codeReader = null;
 let detailId = null;
-let currentBinId = null;
-let currentFamilyName = '';
 
 const EMOJIS = ['🍝','🥫','🥛','🧀','🥩','🐟','🥚','🥦','🥕','🍎',
                 '🍋','🧅','🧄','🍞','🥐','🧁','🍫','🍬','🧃','🥤',
@@ -556,109 +841,49 @@ const CATEGORY_EMOJIS = {
     '💊 Farmaci':'💊','🐾 Animali':'🐾','📦 Altro':'📦'
 };
 
-// ========== LOGIN ==========
-async function doLogin() {
-    const code = document.getElementById('login-input').value.trim().toUpperCase();
-    if (!code) return;
-    document.getElementById('login-error').textContent = '⏳ Verifica codice...';
-
-    try {
-        const res = await fetch(`${BASE_URL}/${MASTER_BIN_ID}/latest`, {
-            headers: { 'X-Master-Key': MASTER_KEY }
-        });
-        if (!res.ok) throw new Error('Errore master');
-        const data = await res.json();
-        const famiglie = data.record.famiglie || {};
-
-        if (!famiglie[code]) {
-            document.getElementById('login-error').textContent = '❌ Codice non valido';
-            return;
-        }
-
-        const famiglia = famiglie[code];
-        currentBinId = famiglia.binId;
-        currentFamilyName = famiglia.nome;
-
-        localStorage.setItem('dispensa_code', code);
-        localStorage.setItem('dispensa_bin', currentBinId);
-        localStorage.setItem('dispensa_name', currentFamilyName);
-
-        showApp();
-    } catch(e) {
-        document.getElementById('login-error').textContent = '❌ Errore di connessione';
-    }
-}
-
-function doLogout() {
-    localStorage.removeItem('dispensa_code');
-    localStorage.removeItem('dispensa_bin');
-    localStorage.removeItem('dispensa_name');
-    products = [];
-    currentBinId = null;
-    document.getElementById('login-screen').classList.remove('hidden');
-    document.getElementById('login-input').value = '';
-    document.getElementById('login-error').textContent = '';
-}
-
-function showApp() {
-    document.getElementById('login-screen').classList.add('hidden');
-    document.getElementById('header-family-name').textContent = currentFamilyName;
-    loadFromJsonBin();
+// ========== INIT ==========
+document.addEventListener('DOMContentLoaded', async () => {
+    renderEmojiGrid();
+    await loadFromJsonBin();
     setInterval(loadFromJsonBin, 60000);
     setInterval(checkNotifications, 300000);
-}
-
-// ========== INIT ==========
-document.addEventListener('DOMContentLoaded', () => {
-    renderEmojiGrid();
-
-    const savedCode = localStorage.getItem('dispensa_code');
-    const savedBin  = localStorage.getItem('dispensa_bin');
-    const savedName = localStorage.getItem('dispensa_name');
-
-    if (savedCode && savedBin && savedName) {
-        currentBinId = savedBin;
-        currentFamilyName = savedName;
-        showApp();
-    }
-    // altrimenti mostra login screen (già visibile di default)
 });
 
 // ========== JSONBIN ==========
 async function loadFromJsonBin() {
-    if (!currentBinId) return;
+    showSyncBar('⏳ Sincronizzazione...');
     try {
-        showSyncBar('🔄 Sincronizzazione...');
-        const res = await fetch(`${BASE_URL}/${currentBinId}/latest`, {
-            headers: { 'X-Master-Key': MASTER_KEY }
+        const res = await fetch(`${BASE_URL}/${BIN_ID}/latest`, {
+            headers: { 'X-Master-Key': API_KEY }
         });
-        if (!res.ok) throw new Error('Errore fetch');
+        if (!res.ok) throw new Error('Errore rete');
         const data = await res.json();
         products = data.record.products || [];
-        hideSyncBar();
         renderAll();
-        checkNotifications();
+        hideSyncBar();
+        showToast('✅ Dati aggiornati', 'success');
     } catch(e) {
         hideSyncBar();
-        showToast('⚠️ Offline - dati locali', 'warning');
+        showSyncBar('❌ Offline - dati locali');
+        setTimeout(hideSyncBar, 3000);
         renderAll();
     }
 }
 
 async function saveToJsonBin() {
-    if (!currentBinId) return;
+    showSyncBar('💾 Salvataggio...');
     try {
-        showSyncBar('💾 Salvataggio...');
-        const res = await fetch(`${BASE_URL}/${currentBinId}`, {
+        const res = await fetch(`${BASE_URL}/${BIN_ID}`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
-                'X-Master-Key': MASTER_KEY
+                'X-Master-Key': API_KEY
             },
             body: JSON.stringify({ products })
         });
         if (!res.ok) throw new Error('Errore salvataggio');
         hideSyncBar();
+        showToast('✅ Salvato!', 'success');
     } catch(e) {
         hideSyncBar();
         showToast('❌ Errore salvataggio', 'error');
@@ -667,26 +892,24 @@ async function saveToJsonBin() {
 
 // ========== RENDER ==========
 function renderAll() {
-    renderStats();
     renderCategoryTabs();
     renderProducts();
+    updateCounts();
+    checkNotifications();
 }
 
-function renderStats() {
-    const today = new Date(); today.setHours(0,0,0,0);
-    const in7 = new Date(today); in7.setDate(in7.getDate()+7);
+function renderEmojiGrid() {
+    const grid = document.getElementById('emoji-grid');
+    if (!grid) return;
+    grid.innerHTML = EMOJIS.map(e => `
+        <button type="button" class="emoji-btn ${e === selectedEmoji ? 'selected' : ''}"
+                onclick="selectEmoji('${e}')">${e}</button>
+    `).join('');
+}
 
-    let expired=0, expiring=0, low=0;
-    products.forEach(p => {
-        if (p.expiry && new Date(p.expiry) < today) expired++;
-        else if (p.expiry && new Date(p.expiry) <= in7) expiring++;
-        if (p.qty <= p.threshold) low++;
-    });
-
-    document.getElementById('count-all').textContent = products.length;
-    document.getElementById('count-expired').textContent = expired;
-    document.getElementById('count-expiring').textContent = expiring;
-    document.getElementById('count-low').textContent = low;
+function selectEmoji(e) {
+    selectedEmoji = e;
+    renderEmojiGrid();
 }
 
 function renderCategoryTabs() {
@@ -702,7 +925,7 @@ function renderCategoryTabs() {
 
 function renderProducts() {
     const grid = document.getElementById('products-grid');
-    const search = document.getElementById('search-input').value.toLowerCase();
+    const search = document.getElementById('search-input').value.toLowerCase().trim();
     const today = new Date(); today.setHours(0,0,0,0);
     const in7 = new Date(today); in7.setDate(in7.getDate()+7);
 
@@ -732,10 +955,12 @@ function renderProducts() {
     }
 
     grid.innerHTML = filtered.map(p => {
+        const today2 = new Date(); today2.setHours(0,0,0,0);
+        const in7b = new Date(today2); in7b.setDate(in7b.getDate()+7);
         const exp = p.expiry ? new Date(p.expiry) : null;
-        const isExpired  = exp && exp < today;
-        const isExpiring = exp && exp >= today && exp <= in7;
-        const isLow      = p.qty <= p.threshold;
+        const isExpired = exp && exp < today2;
+        const isExpiring = exp && exp >= today2 && exp <= in7b;
+        const isLow = p.qty <= p.threshold;
 
         let cardClass = '';
         if (isExpired) cardClass = 'expired';
@@ -743,37 +968,49 @@ function renderProducts() {
         else if (isLow) cardClass = 'low-stock';
 
         let expiryHtml = '';
-        if (exp) {
-            const cls = isExpired ? 'expired' : isExpiring ? 'expiring' : 'ok';
-            expiryHtml = `<div class="card-expiry ${cls}">📅 ${formatDate(p.expiry)}</div>`;
+        if (p.expiry) {
+            let cls = 'ok';
+            if (isExpired) cls = 'expired';
+            else if (isExpiring) cls = 'expiring';
+            expiryHtml = `<div class="card-expiry ${cls}">${isExpired?'❌':'⏰'} ${formatDate(p.expiry)}</div>`;
         }
-
-        let badge = '';
-        if (isExpired) badge = '<div class="status-badge">❌</div>';
-        else if (isExpiring) badge = '<div class="status-badge">⚠️</div>';
-        else if (isLow) badge = '<div class="status-badge">📉</div>';
 
         return `
             <div class="product-card ${cardClass}" onclick="openDetail('${p.id}')">
-                ${badge}
                 <span class="card-emoji">${p.emoji || '📦'}</span>
                 <div class="card-name">${p.name}</div>
                 <div class="card-category">${p.category}</div>
-                <div class="card-quantity" onclick="event.stopPropagation()">
-                    <button class="qty-btn minus" onclick="changeQty('${p.id}',-1)">−</button>
-                    <span class="qty-value">${p.qty} ${p.unit}</span>
-                    <button class="qty-btn plus" onclick="changeQty('${p.id}',1)">+</button>
+                <div class="card-quantity">
+                    <button class="qty-btn minus"
+                        onclick="event.stopPropagation();changeQty('${p.id}',-1)">−</button>
+                    <span class="qty-num">${p.qty}</span>
+                    <button class="qty-btn"
+                        onclick="event.stopPropagation();changeQty('${p.id}',1)">+</button>
                 </div>
+                <div style="font-size:11px;text-align:center;color:var(--text-secondary);margin-top:3px">${p.unit}</div>
                 ${expiryHtml}
             </div>`;
     }).join('');
+}
+
+function updateCounts() {
+    const today = new Date(); today.setHours(0,0,0,0);
+    const in7 = new Date(today); in7.setDate(in7.getDate()+7);
+    document.getElementById('count-all').textContent = products.length;
+    document.getElementById('count-expired').textContent =
+        products.filter(p => p.expiry && new Date(p.expiry) < today).length;
+    document.getElementById('count-expiring').textContent =
+        products.filter(p => { const d = p.expiry ? new Date(p.expiry) : null; return d && d >= today && d <= in7; }).length;
+    document.getElementById('count-low').textContent =
+        products.filter(p => p.qty <= p.threshold).length;
 }
 
 // ========== FILTRI ==========
 function filterByStatus(status) {
     currentFilter = status;
     document.querySelectorAll('.stat-chip').forEach(c => c.classList.remove('active'));
-    document.getElementById(`chip-${status}`).classList.add('active');
+    const chip = document.getElementById(`chip-${status}`);
+    chip.classList.add('active');
     renderProducts();
 }
 
@@ -814,23 +1051,27 @@ function closeAddModal() {
     editingId = null;
 }
 
-function renderEmojiGrid() {
-    const grid = document.getElementById('emoji-grid');
-    if (!grid) return;
-    grid.innerHTML = EMOJIS.map(e => `
-        <div class="emoji-option ${e === selectedEmoji ? 'selected' : ''}"
-             onclick="selectEmoji('${e}')">${e}</div>
-    `).join('');
-}
-
-function selectEmoji(e) {
-    selectedEmoji = e;
+function openEditModal(id) {
+    const p = products.find(x => x.id === id);
+    if (!p) return;
+    editingId = id;
+    document.getElementById('add-modal-title').textContent = '✏️ Modifica Prodotto';
+    document.getElementById('input-name').value = p.name;
+    document.getElementById('input-category').value = p.category;
+    document.getElementById('input-qty').value = p.qty;
+    document.getElementById('input-unit').value = p.unit;
+    document.getElementById('input-expiry').value = p.expiry || '';
+    document.getElementById('input-threshold').value = p.threshold;
+    document.getElementById('input-notes').value = p.notes || '';
+    document.getElementById('barcode-found-box').style.display = 'none';
+    selectedEmoji = p.emoji || '📦';
     renderEmojiGrid();
+    document.getElementById('add-modal').classList.add('active');
 }
 
 async function saveProduct() {
     const name = document.getElementById('input-name').value.trim();
-    if (!name) { showToast('⚠️ Inserisci il nome!', 'warning'); return; }
+    if (!name) { showToast('⚠️ Inserisci il nome del prodotto', 'warning'); return; }
 
     const product = {
         id: editingId || Date.now().toString(),
@@ -839,19 +1080,17 @@ async function saveProduct() {
         emoji: selectedEmoji,
         qty: parseFloat(document.getElementById('input-qty').value) || 0,
         unit: document.getElementById('input-unit').value,
-        expiry: document.getElementById('input-expiry').value,
+        expiry: document.getElementById('input-expiry').value || null,
         threshold: parseFloat(document.getElementById('input-threshold').value) || 2,
         notes: document.getElementById('input-notes').value.trim(),
         updatedAt: new Date().toISOString()
     };
 
     if (editingId) {
-        const i = products.findIndex(p => p.id === editingId);
-        if (i !== -1) products[i] = product;
-        showToast('✅ Prodotto aggiornato!', 'success');
+        const idx = products.findIndex(x => x.id === editingId);
+        if (idx !== -1) products[idx] = product;
     } else {
         products.push(product);
-        showToast('✅ Prodotto aggiunto!', 'success');
     }
 
     closeAddModal();
@@ -871,37 +1110,35 @@ function openDetail(id) {
     document.getElementById('detail-category').textContent = p.category;
 
     const exp = p.expiry ? new Date(p.expiry) : null;
-    const isExpired  = exp && exp < today;
-    const isExpiring = exp && exp >= today && new Date(today.getTime()+7*864e5) >= exp;
+    const isExpired = exp && exp < today;
+    const diff = exp ? Math.ceil((exp - today) / 86400000) : null;
 
-    let rows = `
+    let expiryText = p.expiry ? formatDate(p.expiry) : 'Non impostata';
+    if (isExpired) expiryText += ' ❌ SCADUTO';
+    else if (diff !== null && diff <= 7) expiryText += ` ⚠️ (${diff}gg)`;
+
+    document.getElementById('detail-rows').innerHTML = `
         <div class="detail-row">
-            <span class="detail-row-label">Quantità</span>
-            <span class="detail-row-value">${p.qty} ${p.unit}</span>
+            <span class="detail-label">Quantità</span>
+            <span class="detail-value">${p.qty} ${p.unit}</span>
         </div>
         <div class="detail-row">
-            <span class="detail-row-label">Soglia minima</span>
-            <span class="detail-row-value">${p.threshold} ${p.unit}</span>
-        </div>`;
-
-    if (p.expiry) {
-        const color = isExpired ? 'var(--danger)' : isExpiring ? 'var(--warning)' : 'var(--primary)';
-        rows += `
-            <div class="detail-row">
-                <span class="detail-row-label">Scadenza</span>
-                <span class="detail-row-value" style="color:${color}">${formatDate(p.expiry)}
-                    ${isExpired ? ' ❌' : isExpiring ? ' ⚠️' : ''}</span>
-            </div>`;
-    }
-    if (p.notes) {
-        rows += `
-            <div class="detail-row">
-                <span class="detail-row-label">Note</span>
-                <span class="detail-row-value">${p.notes}</span>
-            </div>`;
-    }
-
-    document.getElementById('detail-rows').innerHTML = rows;
+            <span class="detail-label">Soglia minima</span>
+            <span class="detail-value">${p.threshold} ${p.unit}</span>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label">Scadenza</span>
+            <span class="detail-value">${expiryText}</span>
+        </div>
+        ${p.notes ? `<div class="detail-row">
+            <span class="detail-label">Note</span>
+            <span class="detail-value">${p.notes}</span>
+        </div>` : ''}
+        <div class="detail-row">
+            <span class="detail-label">Aggiornato</span>
+            <span class="detail-value">${p.updatedAt ? new Date(p.updatedAt).toLocaleDateString('it-IT') : '-'}</span>
+        </div>
+    `;
     document.getElementById('detail-modal').classList.add('active');
 }
 
@@ -911,87 +1148,94 @@ function closeDetail() {
 }
 
 function editFromDetail() {
-    const p = products.find(x => x.id === detailId);
-    if (!p) return;
     closeDetail();
-    editingId = p.id;
-    document.getElementById('add-modal-title').textContent = '✏️ Modifica Prodotto';
-    document.getElementById('input-name').value = p.name;
-    document.getElementById('input-category').value = p.category;
-    document.getElementById('input-qty').value = p.qty;
-    document.getElementById('input-unit').value = p.unit;
-    document.getElementById('input-expiry').value = p.expiry || '';
-    document.getElementById('input-threshold').value = p.threshold;
-    document.getElementById('input-notes').value = p.notes || '';
-    document.getElementById('barcode-found-box').style.display = 'none';
-    selectedEmoji = p.emoji || '📦';
-    renderEmojiGrid();
-    document.getElementById('add-modal').classList.add('active');
+    openEditModal(detailId);
 }
 
 async function deleteFromDetail() {
     if (!confirm('Eliminare questo prodotto?')) return;
-    products = products.filter(p => p.id !== detailId);
+    products = products.filter(x => x.id !== detailId);
     closeDetail();
     renderAll();
     await saveToJsonBin();
-    showToast('🗑️ Prodotto eliminato', 'info');
 }
 
 // ========== SCANNER ==========
 function openScanner() {
     document.getElementById('scanner-modal').classList.add('active');
+    document.getElementById('scanner-status').textContent = '📷 Inquadra il codice a barre del prodotto';
+    document.getElementById('scanner-status').className = 'scanner-status';
     startScanner();
-}
-
-function closeScanner() {
-    document.getElementById('scanner-modal').classList.remove('active');
-    stopScanner();
 }
 
 async function startScanner() {
     try {
         codeReader = new ZXing.BrowserMultiFormatReader();
         const devices = await codeReader.listVideoInputDevices();
-        const deviceId = devices.length > 1 ? devices[devices.length-1].deviceId : devices[0]?.deviceId;
-        await codeReader.decodeFromVideoDevice(deviceId, 'scanner-video', async (result, err) => {
-            if (result) {
-                const code = result.getText();
-                document.getElementById('scanner-status').textContent = `✅ Codice: ${code}`;
-                stopScanner();
-                document.getElementById('scanner-modal').classList.remove('active');
-                await lookupBarcode(code);
+
+        if (!devices || devices.length === 0) throw new Error('Nessuna fotocamera trovata');
+
+        const backCamera = devices.find(d =>
+            d.label.toLowerCase().includes('back') ||
+            d.label.toLowerCase().includes('posterior') ||
+            d.label.toLowerCase().includes('rear') ||
+            d.label.toLowerCase().includes('environment')
+        ) || devices[devices.length - 1];
+
+        document.getElementById('scanner-status').textContent = '🔍 Inquadra il codice a barre...';
+        document.getElementById('scanner-status').className = 'scanner-status';
+
+        await codeReader.decodeFromVideoDevice(
+            backCamera?.deviceId || undefined,
+            'scanner-video',
+            async (result, err) => {
+                if (result) {
+                    const barcode = result.getText();
+                    await handleBarcodeResult(barcode);
+                }
             }
-        });
-    } catch(e) {
-        document.getElementById('scanner-status').textContent = '❌ Camera non disponibile';
+        );
+    } catch(err) {
+        document.getElementById('scanner-status').textContent = `❌ ${err.message}`;
+        document.getElementById('scanner-status').className = 'scanner-status error';
     }
 }
 
-function stopScanner() {
-    if (codeReader) { codeReader.reset(); codeReader = null; }
+function closeScanner() {
+    if (codeReader) {
+        codeReader.reset();
+        codeReader = null;
+    }
+    document.getElementById('scanner-modal').classList.remove('active');
 }
 
-async function lookupBarcode(code) {
-    showToast('🔍 Ricerca prodotto...', 'info');
+async function handleBarcodeResult(code) {
+    document.getElementById('scanner-status').textContent = `✅ Codice: ${code} - Ricerca...`;
+    document.getElementById('scanner-status').className = 'scanner-status';
+
+    if (codeReader) { codeReader.reset(); codeReader = null; }
+
     try {
         const res = await fetch(`https://world.openfoodfacts.org/api/v0/product/${code}.json`);
         const data = await res.json();
+
         if (data.status === 1) {
             const p = data.product;
             const name = p.product_name_it || p.product_name || p.generic_name || '';
             const brand = p.brands || '';
-            const tags = [...(p.categories_tags||[]), ...(p.labels_tags||[])];
-            const category = mapCategory(tags);
-            const emoji = CATEGORY_EMOJIS[category] || '📦';
-            fillFormFromBarcode(name, brand, category, emoji, code);
+            const cat = mapCategory(p.categories_tags || []);
+            const emoji = CATEGORY_EMOJIS[cat] || '📦';
+            closeScanner();
+            fillFormFromBarcode(name, brand, cat, emoji, code);
         } else {
+            closeScanner();
             fillFormFromBarcode('', '', '📦 Altro', '📦', code);
-            showToast('⚠️ Prodotto non trovato nel database', 'warning');
+            showToast('⚠️ Prodotto non trovato nel DB', 'warning');
         }
     } catch(e) {
+        closeScanner();
         fillFormFromBarcode('', '', '📦 Altro', '📦', code);
-        showToast('⚠️ Ricerca offline non disponibile', 'warning');
+        showToast('⚠️ Offline - compila manualmente', 'warning');
     }
 }
 
@@ -1063,7 +1307,7 @@ function exportData() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `dispensa_${currentFamilyName.replace(/\s+/g,'_')}_${new Date().toISOString().slice(0,10)}.json`;
+    a.download = `dispensa_${new Date().toISOString().slice(0,10)}.json`;
     a.click();
     URL.revokeObjectURL(url);
     showToast('📤 Export completato!', 'success');
