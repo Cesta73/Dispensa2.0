@@ -1,0 +1,1162 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🏠 Dispensa di Casa</title>
+    <meta name="theme-color" content="#2E7D32">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Dispensa">
+    <script src="https://cdn.jsdelivr.net/npm/quagga@0.12.1/dist/quagga.min.js"></script>
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+        :root {
+            --primary:#2E7D32; --primary-light:#4CAF50; --primary-dark:#1B5E20;
+            --danger:#D32F2F; --danger-light:#EF5350;
+            --warning:#F57F17; --warning-light:#FFB300;
+            --info:#0288D1;
+            --surface:#FFFFFF; --background:#F1F8E9; --card-bg:#FFFFFF;
+            --text-primary:#1A1A1A; --text-secondary:#666666;
+            --border:#E0E0E0;
+            --shadow:0 2px 8px rgba(0,0,0,0.1);
+            --shadow-lg:0 4px 16px rgba(0,0,0,0.15);
+            --radius:12px; --radius-sm:8px;
+        }
+        body {
+            font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+            background:var(--background); color:var(--text-primary);
+            min-height:100vh; overflow-x:hidden;
+        }
+
+        /* HEADER */
+        .header {
+            position:sticky; top:0; z-index:100;
+            background:var(--primary);
+            padding:12px 16px 8px;
+            box-shadow:var(--shadow-lg);
+        }
+        .header-top {
+            display:flex; align-items:center;
+            justify-content:space-between; margin-bottom:10px;
+        }
+        .header-title { color:white; font-size:20px; font-weight:700; }
+        .header-actions { display:flex; gap:8px; }
+        .header-btn {
+            background:rgba(255,255,255,0.2); border:none; color:white;
+            padding:8px 12px; border-radius:20px; font-size:14px;
+            cursor:pointer; font-weight:600;
+        }
+        .search-container {
+            display:flex; align-items:center; gap:8px;
+            background:rgba(255,255,255,0.15);
+            border-radius:25px; padding:8px 14px;
+        }
+        .search-icon { font-size:16px; }
+        .search-input {
+            background:transparent; border:none; outline:none;
+            color:white; font-size:15px; width:100%;
+        }
+        .search-input::placeholder { color:rgba(255,255,255,0.7); }
+
+        /* SYNC STATUS */
+        .sync-bar {
+            background:var(--primary-dark); color:white;
+            text-align:center; font-size:12px; padding:4px;
+            min-height:22px;
+        }
+
+        /* STATS BAR */
+        .stats-bar {
+            display:flex; gap:8px; padding:12px 16px;
+            overflow-x:auto; scrollbar-width:none;
+            background:white; border-bottom:1px solid var(--border);
+        }
+        .stats-bar::-webkit-scrollbar { display:none; }
+        .stat-chip {
+            display:flex; align-items:center; gap:6px;
+            padding:6px 14px; border-radius:20px;
+            font-size:13px; font-weight:600; white-space:nowrap;
+            cursor:pointer; border:2px solid transparent; transition:all 0.2s;
+        }
+        .stat-chip.all { background:#E8F5E9; color:var(--primary); }
+        .stat-chip.expired { background:#FFEBEE; color:var(--danger); }
+        .stat-chip.expiring { background:#FFF8E1; color:var(--warning); }
+        .stat-chip.low { background:#E3F2FD; color:var(--info); }
+        .stat-chip.active { border-color:currentColor; }
+
+        /* CATEGORY TABS */
+        .category-tabs {
+            display:flex; gap:8px; padding:10px 16px;
+            overflow-x:auto; scrollbar-width:none; background:white;
+        }
+        .category-tabs::-webkit-scrollbar { display:none; }
+        .category-tab {
+            padding:6px 14px; border-radius:20px; border:2px solid var(--border);
+            background:white; font-size:13px; font-weight:600;
+            cursor:pointer; white-space:nowrap; transition:all 0.2s;
+        }
+        .category-tab.active {
+            background:var(--primary); color:white; border-color:var(--primary);
+        }
+
+        /* PRODUCTS GRID */
+        .products-container { padding:12px 16px 100px; }
+        .products-grid {
+            display:grid; grid-template-columns:1fr; gap:12px;
+        }
+        @media(min-width:400px) { .products-grid { grid-template-columns:repeat(2,1fr); } }
+        @media(min-width:600px) { .products-grid { grid-template-columns:repeat(3,1fr); } }
+
+        /* PRODUCT CARD */
+        .product-card {
+            background:var(--card-bg); border-radius:var(--radius);
+            box-shadow:var(--shadow); overflow:hidden;
+            transition:transform 0.2s; cursor:pointer;
+        }
+        .product-card:active { transform:scale(0.97); }
+        .card-header {
+            display:flex; align-items:center; gap:10px;
+            padding:12px 12px 8px;
+        }
+        .card-emoji { font-size:36px; }
+        .card-info { flex:1; min-width:0; }
+        .card-name {
+            font-size:15px; font-weight:700;
+            white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+        }
+        .card-category { font-size:11px; color:var(--text-secondary); margin-top:2px; }
+        .card-body { padding:0 12px 12px; }
+        .card-expiry {
+            display:inline-block; padding:3px 10px;
+            border-radius:12px; font-size:12px; font-weight:600; margin-bottom:8px;
+        }
+        .card-expiry.expired { background:#FFEBEE; color:var(--danger); }
+        .card-expiry.expiring { background:#FFF8E1; color:var(--warning); }
+        .card-expiry.ok { background:#E8F5E9; color:var(--primary); }
+        .card-expiry.none { background:#F5F5F5; color:var(--text-secondary); }
+        .card-qty-row {
+            display:flex; align-items:center; justify-content:space-between;
+        }
+        .qty-controls { display:flex; align-items:center; gap:8px; }
+        .qty-btn {
+            width:30px; height:30px; border-radius:50%; border:none;
+            font-size:18px; cursor:pointer; display:flex;
+            align-items:center; justify-content:center; font-weight:700;
+        }
+        .qty-btn.minus { background:#FFEBEE; color:var(--danger); }
+        .qty-btn.plus { background:#E8F5E9; color:var(--primary); }
+        .qty-value { font-size:16px; font-weight:700; min-width:30px; text-align:center; }
+        .qty-unit { font-size:12px; color:var(--text-secondary); }
+        .threshold-badge {
+            display:inline-flex; align-items:center; gap:4px;
+            padding:4px 10px; border-radius:12px; font-size:12px;
+            font-weight:600; background:#E3F2FD; color:var(--info);
+        }
+
+        /* FAB */
+        .fab {
+            position:fixed; bottom:24px; right:24px; z-index:200;
+            width:60px; height:60px; border-radius:50%;
+            background:var(--primary); color:white; border:none;
+            font-size:28px; cursor:pointer; box-shadow:var(--shadow-lg);
+            display:flex; align-items:center; justify-content:center;
+            transition:transform 0.2s;
+        }
+        .fab:active { transform:scale(0.9); }
+
+        /* MODAL */
+        .modal-overlay {
+            position:fixed; inset:0; z-index:300;
+            background:rgba(0,0,0,0.5);
+            display:flex; align-items:flex-end; justify-content:center;
+            opacity:0; pointer-events:none; transition:opacity 0.3s;
+        }
+        .modal-overlay.active { opacity:1; pointer-events:all; }
+        .modal {
+            background:white; border-radius:20px 20px 0 0;
+            padding:20px 20px 40px; width:100%; max-width:600px;
+            max-height:90vh; overflow-y:auto;
+            transform:translateY(100%); transition:transform 0.3s;
+        }
+        .modal-overlay.active .modal { transform:translateY(0); }
+        .modal-handle {
+            width:40px; height:4px; background:#DDD;
+            border-radius:2px; margin:0 auto 16px;
+        }
+        .modal-title { font-size:20px; font-weight:700; margin-bottom:16px; }
+
+        /* FORM */
+        .form-group { margin-bottom:14px; }
+        .form-label { display:block; font-size:13px; font-weight:600; margin-bottom:6px; color:var(--text-secondary); }
+        .form-input {
+            width:100%; padding:12px 14px; border:2px solid var(--border);
+            border-radius:var(--radius-sm); font-size:15px;
+            outline:none; transition:border-color 0.2s;
+            font-family:inherit;
+        }
+        .form-input:focus { border-color:var(--primary); }
+        .form-row { display:flex; gap:10px; }
+        .form-row .form-group { flex:1; }
+
+        /* EMOJI GRID */
+        .emoji-grid {
+            display:grid; grid-template-columns:repeat(8,1fr); gap:6px;
+        }
+        .emoji-option {
+            aspect-ratio:1; display:flex; align-items:center;
+            justify-content:center; font-size:22px; border-radius:8px;
+            cursor:pointer; border:2px solid transparent; transition:all 0.15s;
+        }
+        .emoji-option.selected { border-color:var(--primary); background:#E8F5E9; }
+
+        /* BUTTONS */
+        .btn {
+            width:100%; padding:14px; border-radius:var(--radius);
+            border:none; font-size:16px; font-weight:700;
+            cursor:pointer; margin-bottom:10px; transition:opacity 0.2s;
+        }
+        .btn:active { opacity:0.8; }
+        .btn-primary { background:var(--primary); color:white; }
+        .btn-secondary { background:#F5F5F5; color:var(--text-primary); }
+        .btn-danger { background:var(--danger); color:white; }
+        .btn-scan { background:var(--info); color:white; }
+
+        /* DETAIL MODAL */
+        .detail-emoji { font-size:64px; text-align:center; margin-bottom:8px; }
+        .detail-name { font-size:24px; font-weight:700; text-align:center; margin-bottom:4px; }
+        .detail-category { text-align:center; color:var(--text-secondary); margin-bottom:16px; }
+        .detail-row {
+            display:flex; justify-content:space-between; align-items:center;
+            padding:12px 0; border-bottom:1px solid var(--border);
+        }
+        .detail-label { color:var(--text-secondary); font-size:14px; }
+        .detail-value { font-weight:600; font-size:14px; }
+        .detail-actions { display:flex; gap:10px; margin-top:16px; }
+        .detail-actions .btn { margin-bottom:0; }
+
+        /* SCANNER */
+        .scanner-container {
+            width:100%; height:260px; background:#000;
+            border-radius:var(--radius); overflow:hidden;
+            position:relative; margin-bottom:16px;
+        }
+        .scanner-overlay {
+            position:absolute; inset:0; display:flex;
+            align-items:center; justify-content:center; pointer-events:none;
+        }
+        .scanner-frame {
+            width:200px; height:120px; border:3px solid white;
+            border-radius:12px; box-shadow:0 0 0 9999px rgba(0,0,0,0.4);
+        }
+        .scanner-line {
+            position:absolute; width:180px; height:2px;
+            background:var(--primary-light); animation:scan 2s linear infinite;
+        }
+        @keyframes scan {
+            0%,100% { transform:translateY(-50px); }
+            50% { transform:translateY(50px); }
+        }
+        .scanner-status {
+            text-align:center; padding:10px; font-size:14px;
+            font-weight:600; margin-bottom:12px; border-radius:8px;
+            background:#F5F5F5;
+        }
+        .scanner-status.loading { background:#E3F2FD; color:var(--info); }
+        .scanner-status.error { background:#FFEBEE; color:var(--danger); }
+        .scanner-status.success { background:#E8F5E9; color:var(--primary); }
+
+        /* BARCODE INFO */
+        .barcode-info {
+            display:flex; align-items:center; gap:8px;
+            padding:10px 14px; background:#F5F5F5;
+            border-radius:var(--radius-sm); font-size:13px;
+            color:var(--text-secondary); margin-top:8px;
+        }
+
+        /* NOTIFICATION PANEL */
+        .notif-panel {
+            position:fixed; top:0; right:0; bottom:0;
+            width:300px; background:white; z-index:400;
+            box-shadow:var(--shadow-lg); transform:translateX(100%);
+            transition:transform 0.3s; overflow-y:auto;
+        }
+        .notif-panel.visible { transform:translateX(0); }
+        .notif-header {
+            display:flex; justify-content:space-between; align-items:center;
+            padding:20px 16px; border-bottom:1px solid var(--border);
+            font-weight:700; font-size:16px; position:sticky; top:0; background:white;
+        }
+        .notif-item {
+            padding:12px 16px; border-bottom:1px solid var(--border);
+            font-size:14px;
+        }
+        .notif-item.danger { border-left:4px solid var(--danger); }
+        .notif-item.warning { border-left:4px solid var(--warning); }
+        .notif-item.info { border-left:4px solid var(--info); }
+
+        /* TOAST */
+        .toast {
+            position:fixed; bottom:100px; left:50%;
+            transform:translateX(-50%) translateY(20px);
+            background:#333; color:white; padding:12px 24px;
+            border-radius:25px; font-size:14px; font-weight:500;
+            z-index:9999; opacity:0; transition:all 0.3s;
+            white-space:nowrap; pointer-events:none;
+        }
+        .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+        .toast.success { background:var(--primary); }
+        .toast.error { background:var(--danger); }
+        .toast.warning { background:var(--warning); }
+        .toast.info { background:var(--info); }
+
+        /* EMPTY STATE */
+        .empty-state { text-align:center; padding:60px 20px; color:var(--text-secondary); }
+        .empty-state-icon { font-size:64px; margin-bottom:16px; display:block; }
+        .empty-state-title { font-size:20px; font-weight:600; margin-bottom:8px; color:var(--text-primary); }
+
+        /* LOADING */
+        .loading-spinner {
+            width:40px; height:40px; border:4px solid var(--border);
+            border-top-color:var(--primary); border-radius:50%;
+            animation:spin 0.8s linear infinite; margin:40px auto;
+        }
+        @keyframes spin { to { transform:rotate(360deg); } }
+/* SYNC BAR */
+.sync-bar {
+    display:none;
+    text-align:center;
+    padding:8px;
+    font-size:13px;
+    font-weight:600;
+    color:white;
+    position:sticky;
+    top:72px;
+    z-index:99;
+}    
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+    <div class="header-top">
+        <span class="header-title">🏠 Dispensa di Casa</span>
+        <div class="header-actions">
+            <button class="header-btn" onclick="toggleNotifPanel()">🔔 <span id="notif-count"></span></button>
+            <button class="header-btn" onclick="exportData()">📤</button>
+        </div>
+    </div>
+    <div class="search-container">
+        <span class="search-icon">🔍</span>
+        <input class="search-input" type="text" placeholder="Cerca prodotto..."
+               id="search-input" oninput="renderProducts()">
+    </div>
+</div>
+
+<!-- SYNC STATUS BAR -->
+<div class="sync-bar" id="sync-bar">⏳ Connessione in corso...</div>
+
+<!-- STATS BAR -->
+<div class="stats-bar">
+    <div class="stat-chip all active" id="chip-all" onclick="filterByStatus('all')">
+        🏠 Tutti <span id="count-all">0</span>
+    </div>
+    <div class="stat-chip expired" id="chip-expired" onclick="filterByStatus('expired')">
+        ❌ Scaduti <span id="count-expired">0</span>
+    </div>
+    <div class="stat-chip expiring" id="chip-expiring" onclick="filterByStatus('expiring')">
+        ⚠️ In scadenza <span id="count-expiring">0</span>
+    </div>
+    <div class="stat-chip low" id="chip-low" onclick="filterByStatus('low')">
+        📉 Scorte basse <span id="count-low">0</span>
+    </div>
+</div>
+
+<!-- CATEGORY TABS -->
+<div class="category-tabs" id="category-tabs"></div>
+
+<!-- PRODUCTS -->
+<div class="products-container">
+    <div class="products-grid" id="products-grid">
+        <div style="grid-column:1/-1">
+            <div class="loading-spinner"></div>
+        </div>
+    </div>
+</div>
+
+<!-- FAB -->
+<button class="fab" onclick="openAddModal()">＋</button>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- NOTIFICATION PANEL -->
+<div class="notif-panel" id="notif-panel">
+    <div class="notif-header">
+        🔔 Notifiche
+        <button onclick="toggleNotifPanel()" style="background:none;border:none;font-size:20px;cursor:pointer;">✕</button>
+    </div>
+    <div id="notif-list"></div>
+</div>
+
+<!-- ===== MODAL: SCANNER ===== -->
+<div class="modal-overlay" id="scanner-modal">
+    <div class="modal">
+        <div class="modal-handle"></div>
+        <h2 class="modal-title">📷 Scansiona Barcode</h2>
+        <div class="scanner-container">
+            <div id="scanner-area" style="width:100%;height:100%;"></div>
+            <div class="scanner-overlay">
+                <div style="position:relative;display:flex;align-items:center;justify-content:center;">
+                    <div class="scanner-frame"></div>
+                    <div class="scanner-line"></div>
+                </div>
+            </div>
+        </div>
+        <div class="scanner-status" id="scanner-status">📷 Inquadra il codice a barre del prodotto</div>
+        <button class="btn btn-secondary" onclick="closeScanner()">✕ Chiudi Scanner</button>
+    </div>
+</div>
+
+<!-- ===== MODAL: AGGIUNGI/MODIFICA ===== -->
+<div class="modal-overlay" id="add-modal">
+    <div class="modal">
+        <div class="modal-handle"></div>
+        <h2 class="modal-title" id="add-modal-title">➕ Aggiungi Prodotto</h2>
+
+        <!-- Barcode trovato -->
+        <div id="barcode-found-box" style="display:none;margin-bottom:16px;">
+            <div style="background:#E8F5E9;border-radius:10px;padding:12px;display:flex;align-items:center;gap:10px;">
+                <span style="font-size:28px;" id="barcode-found-emoji">🛒</span>
+                <div>
+                    <div style="font-weight:700;font-size:15px;" id="barcode-found-name"></div>
+                    <div style="font-size:12px;color:#666;" id="barcode-found-brand"></div>
+                </div>
+            </div>
+            <div class="barcode-info">🔖 Codice: <strong id="barcode-found-code"></strong></div>
+        </div>
+
+        <button class="btn btn-scan" onclick="openScanner()" id="scan-btn">📷 Scansiona Barcode</button>
+
+        <div class="form-group">
+            <label class="form-label">Nome Prodotto *</label>
+            <input class="form-input" type="text" id="input-name" placeholder="Es. Pasta, Latte...">
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Categoria</label>
+            <select class="form-input" id="input-category">
+                <option>🍝 Pasta & Riso</option>
+                <option>🥫 Conserve</option>
+                <option>🥛 Latticini</option>
+                <option>🥩 Carne & Pesce</option>
+                <option>🥦 Frutta & Verdura</option>
+                <option>🧁 Dolci & Snack</option>
+                <option>🧃 Bevande</option>
+                <option>🫙 Condimenti</option>
+                <option>🧊 Surgelati</option>
+                <option>🍞 Pane & Cereali</option>
+                <option>🧹 Pulizia Casa</option>
+                <option>🧴 Igiene Personale</option>
+                <option>💊 Farmaci</option>
+                <option>🐾 Animali</option>
+                <option>📦 Altro</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Emoji</label>
+            <div class="emoji-grid" id="emoji-grid"></div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label class="form-label">Quantità</label>
+                <input class="form-input" type="number" id="input-qty" value="1" min="0">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Unità</label>
+                <select class="form-input" id="input-unit">
+                    <option>pz</option>
+                    <option>kg</option>
+                    <option>g</option>
+                    <option>L</option>
+                    <option>ml</option>
+                    <option>barattolo</option>
+                    <option>busta</option>
+                    <option>scatola</option>
+                    <option>bottiglia</option>
+                    <option>confezione</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label class="form-label">Scadenza</label>
+                <input class="form-input" type="date" id="input-expiry">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Soglia minima</label>
+                <input class="form-input" type="number" id="input-threshold" value="1" min="0">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Note</label>
+            <input class="form-input" type="text" id="input-notes" placeholder="Note opzionali...">
+        </div>
+
+        <button class="btn btn-primary" onclick="saveProduct()">💾 Salva Prodotto</button>
+        <button class="btn btn-secondary" onclick="closeAddModal()">Annulla</button>
+    </div>
+</div>
+
+<!-- ===== MODAL: DETTAGLIO ===== -->
+<div class="modal-overlay" id="detail-modal">
+    <div class="modal">
+        <div class="modal-handle"></div>
+        <div class="detail-emoji" id="detail-emoji"></div>
+        <div class="detail-name" id="detail-name"></div>
+        <div class="detail-category" id="detail-category"></div>
+        <div id="detail-rows"></div>
+        <div class="detail-actions">
+            <button class="btn btn-primary" style="margin-bottom:0"
+                    onclick="editFromDetail()">✏️ Modifica</button>
+            <button class="btn btn-danger" style="margin-bottom:0"
+                    onclick="deleteFromDetail()">🗑️ Elimina</button>
+        </div>
+        <button class="btn btn-secondary" style="margin-top:10px"
+                onclick="closeDetail()">Chiudi</button>
+    </div>
+</div>
+
+</body>
+<script>
+// ========== JSONBIN CONFIG ==========
+const JSONBIN_BIN_ID = '69dc981faaba882197f26662';
+const JSONBIN_MASTER_KEY = '$2a$10$yAkIzU6bBTdv7q33Aj7CKe7QrQJcpq1UjR77JTuxJibH4EA.41vT.';
+const JSONBIN_URL = `https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`;
+
+// ========== STATO ==========
+let products = [];
+let currentFilter = 'all';
+let currentCategory = 'all';
+let editingId = null;
+let selectedEmoji = '📦';
+let scannedBarcode = '';
+let scannerRunning = false;
+let syncTimeout = null;
+
+const EMOJIS = [
+    '🍝','🍚','🥫','🥛','🧀','🥚','🥩','🐟','🍗',
+    '🥦','🍅','🧅','🧄','🥕','🍊','🍋','🍎','🍌',
+    '🧁','🍪','🍫','🍬','🥤','🧃','☕','🍵','🫖',
+    '🍞','🥐','🧇','🥞','🫙','🧂','🫒','🥜','🌰',
+    '🧊','❄️','🧹','🧴','🧼','💊','🐾','📦','🛒'
+];
+
+// ========== JSONBIN SYNC ==========
+function setSyncBar(msg, color = '#F57F17') {
+    const bar = document.getElementById('sync-bar');
+    bar.textContent = msg;
+    bar.style.background = color;
+    bar.style.display = 'block';
+}
+
+function hideSyncBar() {
+    const bar = document.getElementById('sync-bar');
+    bar.style.display = 'none';
+}
+
+async function loadFromJsonBin() {
+    setSyncBar('⏳ Caricamento dati in corso...', '#0288D1');
+    try {
+        const res = await fetch(JSONBIN_URL + '/latest', {
+            headers: {
+                'X-Master-Key': JSONBIN_MASTER_KEY
+            }
+        });
+        if (!res.ok) throw new Error('Errore caricamento');
+        const json = await res.json();
+        const data = json.record;
+
+        if (Array.isArray(data.products)) {
+            products = data.products;
+            localStorage.setItem('dispensa_v3', JSON.stringify(products));
+            setSyncBar('✅ Dati sincronizzati!', '#2E7D32');
+            setTimeout(hideSyncBar, 2000);
+        } else {
+            // Bin vuoto o struttura nuova, prova localStorage
+            const local = localStorage.getItem('dispensa_v3');
+            if (local) products = JSON.parse(local);
+            setSyncBar('⚠️ Bin vuoto, uso dati locali', '#F57F17');
+            setTimeout(hideSyncBar, 2000);
+        }
+    } catch(e) {
+        // Fallback localStorage
+        const local = localStorage.getItem('dispensa_v3');
+        if (local) products = JSON.parse(local);
+        setSyncBar('❌ Offline - dati locali', '#D32F2F');
+        setTimeout(hideSyncBar, 3000);
+    }
+    renderCategoryTabs();
+    renderProducts();
+    updateStats();
+    checkNotifications();
+}
+
+async function saveToJsonBin() {
+    try {
+        await fetch(JSONBIN_URL, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Master-Key': JSONBIN_MASTER_KEY
+            },
+            body: JSON.stringify({ products })
+        });
+        setSyncBar('✅ Salvato sul cloud!', '#2E7D32');
+        setTimeout(hideSyncBar, 2000);
+    } catch(e) {
+        setSyncBar('❌ Salvataggio cloud fallito - solo locale', '#D32F2F');
+        setTimeout(hideSyncBar, 3000);
+    }
+}
+
+function saveData() {
+    // Salva sempre in locale
+    localStorage.setItem('dispensa_v3', JSON.stringify(products));
+    // Debounce salvataggio cloud (evita troppe chiamate)
+    clearTimeout(syncTimeout);
+    setSyncBar('⏳ Sincronizzazione...', '#F57F17');
+    syncTimeout = setTimeout(() => {
+        saveToJsonBin();
+    }, 1500);
+}
+
+// ========== INIT ==========
+function init() {
+    renderEmojiGrid();
+    requestNotificationPermission();
+    loadFromJsonBin();
+}
+
+// ========== UTILS ==========
+function uid() { return Date.now().toString(36) + Math.random().toString(36).substr(2); }
+
+function dateAdd(days) {
+    const d = new Date();
+    d.setDate(d.getDate() + days);
+    return d.toISOString().split('T')[0];
+}
+
+function getExpiryStatus(expiry) {
+    if (!expiry) return 'none';
+    const today = new Date(); today.setHours(0,0,0,0);
+    const exp = new Date(expiry); exp.setHours(0,0,0,0);
+    const diff = Math.floor((exp - today) / 86400000);
+    if (diff < 0) return 'expired';
+    if (diff <= 7) return 'expiring';
+    return 'ok';
+}
+
+function getExpiryLabel(expiry) {
+    if (!expiry) return 'Nessuna scadenza';
+    const today = new Date(); today.setHours(0,0,0,0);
+    const exp = new Date(expiry); exp.setHours(0,0,0,0);
+    const diff = Math.floor((exp - today) / 86400000);
+    if (diff < 0) return `Scaduto ${Math.abs(diff)}g fa`;
+    if (diff === 0) return 'Scade oggi!';
+    if (diff === 1) return 'Scade domani';
+    if (diff <= 7) return `Scade in ${diff}g`;
+    return exp.toLocaleDateString('it-IT', {day:'2-digit',month:'2-digit',year:'numeric'});
+}
+
+// ========== STATS ==========
+function updateStats() {
+    const expired = products.filter(p => getExpiryStatus(p.expiry) === 'expired').length;
+    const expiring = products.filter(p => getExpiryStatus(p.expiry) === 'expiring').length;
+    const low = products.filter(p => p.qty <= p.threshold && p.qty > 0).length;
+    const total = products.length;
+
+    document.getElementById('count-all').textContent = total;
+    document.getElementById('count-expired').textContent = expired;
+    document.getElementById('count-expiring').textContent = expiring;
+    document.getElementById('count-low').textContent = low;
+
+    const notifCount = expired + expiring + low;
+    const badge = document.getElementById('notif-count');
+    badge.textContent = notifCount > 0 ? notifCount : '';
+}
+
+// ========== CATEGORY TABS ==========
+function renderCategoryTabs() {
+    const cats = ['all', ...new Set(products.map(p => p.category))];
+    const tabs = document.getElementById('category-tabs');
+    tabs.innerHTML = cats.map(c => `
+        <div class="cat-tab ${c === currentCategory ? 'active' : ''}"
+             onclick="filterByCategory('${c}')">
+            ${c === 'all' ? '🏠 Tutti' : c}
+        </div>`).join('');
+}
+
+function filterByCategory(cat) {
+    currentCategory = cat;
+    renderCategoryTabs();
+    renderProducts();
+}
+
+// ========== RENDER PRODUCTS ==========
+function renderProducts() {
+    const search = document.getElementById('search-input').value.toLowerCase();
+    const grid = document.getElementById('products-grid');
+
+    let filtered = products.filter(p => {
+        const matchSearch = p.name.toLowerCase().includes(search) ||
+                           p.category.toLowerCase().includes(search);
+        const matchCat = currentCategory === 'all' || p.category === currentCategory;
+        const expiryStatus = getExpiryStatus(p.expiry);
+        const isLow = p.qty <= p.threshold && p.qty > 0;
+
+        let matchFilter = true;
+        if (currentFilter === 'expired') matchFilter = expiryStatus === 'expired';
+        else if (currentFilter === 'expiring') matchFilter = expiryStatus === 'expiring';
+        else if (currentFilter === 'low') matchFilter = isLow;
+
+        return matchSearch && matchCat && matchFilter;
+    });
+
+    if (filtered.length === 0) {
+        grid.innerHTML = `
+            <div class="empty-state" style="grid-column:1/-1">
+                <span class="empty-state-icon">📭</span>
+                <div class="empty-state-title">Nessun prodotto trovato</div>
+                <div style="color:var(--text-secondary);font-size:14px">
+                    Aggiungi il tuo primo prodotto con il pulsante +
+                </div>
+            </div>`;
+        return;
+    }
+
+    grid.innerHTML = filtered.map(p => {
+        const expiryStatus = getExpiryStatus(p.expiry);
+        const isLow = p.qty <= p.threshold && p.qty > 0;
+        const isOut = p.qty === 0;
+        let cardClass = '';
+        if (expiryStatus === 'expired') cardClass = 'expired';
+        else if (expiryStatus === 'expiring') cardClass = 'expiring';
+        else if (isLow) cardClass = 'low-stock';
+        if (isOut) cardClass += ' out-of-stock';
+
+        return `
+        <div class="product-card ${cardClass}" onclick="openDetail('${p.id}')">
+            <span class="card-emoji">${p.emoji}</span>
+            <div class="card-name">${p.name}</div>
+            <div class="card-category">${p.category.split(' ').slice(1).join(' ')}</div>
+            <div class="card-quantity" onclick="event.stopPropagation()">
+                <button class="qty-btn minus" onclick="changeQty('${p.id}',-1)">−</button>
+                <span class="qty-value">${p.qty}<small style="font-size:11px;font-weight:400"> ${p.unit}</small></span>
+                <button class="qty-btn plus" onclick="changeQty('${p.id}',1)">+</button>
+            </div>
+            <div class="card-expiry ${expiryStatus}">${getExpiryLabel(p.expiry)}</div>
+        </div>`;
+    }).join('');
+}
+
+// ========== FILTER ==========
+function filterByStatus(status) {
+    currentFilter = status;
+    document.querySelectorAll('.stat-chip').forEach(c => c.classList.remove('active'));
+    document.getElementById('chip-' + status).classList.add('active');
+    renderProducts();
+}
+
+// ========== QUANTITÀ ==========
+function changeQty(id, delta) {
+    const p = products.find(x => x.id === id);
+    if (!p) return;
+    p.qty = Math.max(0, p.qty + delta);
+    saveData();
+    renderProducts();
+    updateStats();
+    checkNotifications();
+}
+
+// ========== EMOJI GRID ==========
+function renderEmojiGrid() {
+    const grid = document.getElementById('emoji-grid');
+    grid.innerHTML = EMOJIS.map(e => `
+        <div class="emoji-option ${e === selectedEmoji ? 'selected' : ''}"
+             onclick="selectEmoji('${e}')">${e}</div>`).join('');
+}
+
+function selectEmoji(e) {
+    selectedEmoji = e;
+    renderEmojiGrid();
+}
+
+// ========== MODAL AGGIUNGI ==========
+function openAddModal() {
+    editingId = null;
+    scannedBarcode = '';
+    selectedEmoji = '📦';
+    document.getElementById('add-modal-title').textContent = '➕ Aggiungi Prodotto';
+    document.getElementById('input-name').value = '';
+    document.getElementById('input-category').value = '🍝 Pasta & Riso';
+    document.getElementById('input-qty').value = '1';
+    document.getElementById('input-unit').value = 'pz';
+    document.getElementById('input-expiry').value = '';
+    document.getElementById('input-threshold').value = '1';
+    document.getElementById('input-notes').value = '';
+    document.getElementById('barcode-found-box').style.display = 'none';
+    document.getElementById('scan-btn').style.display = 'block';
+    renderEmojiGrid();
+    document.getElementById('add-modal').classList.add('active');
+}
+
+function closeAddModal() {
+    document.getElementById('add-modal').classList.remove('active');
+    editingId = null;
+    scannedBarcode = '';
+}
+
+// ========== SALVA PRODOTTO ==========
+function saveProduct() {
+    const name = document.getElementById('input-name').value.trim();
+    if (!name) { showToast('⚠️ Inserisci il nome del prodotto!', 'warning'); return; }
+
+    const product = {
+        id: editingId || uid(),
+        name,
+        emoji: selectedEmoji,
+        category: document.getElementById('input-category').value,
+        qty: parseInt(document.getElementById('input-qty').value) || 0,
+        unit: document.getElementById('input-unit').value,
+        expiry: document.getElementById('input-expiry').value,
+        threshold: parseInt(document.getElementById('input-threshold').value) || 1,
+        notes: document.getElementById('input-notes').value.trim(),
+        barcode: scannedBarcode || ''
+    };
+
+    if (editingId) {
+        const idx = products.findIndex(p => p.id === editingId);
+        products[idx] = product;
+        showToast('✅ Prodotto aggiornato!', 'success');
+    } else {
+        products.push(product);
+        showToast('✅ Prodotto aggiunto!', 'success');
+    }
+
+    saveData();
+    renderCategoryTabs();
+    renderProducts();
+    updateStats();
+    checkNotifications();
+    closeAddModal();
+}
+
+// ========== MODAL DETTAGLIO ==========
+let detailId = null;
+
+function openDetail(id) {
+    detailId = id;
+    const p = products.find(x => x.id === id);
+    if (!p) return;
+    document.getElementById('detail-emoji').textContent = p.emoji;
+    document.getElementById('detail-name').textContent = p.name;
+    document.getElementById('detail-category').textContent = p.category;
+    const expiryStatus = getExpiryStatus(p.expiry);
+    document.getElementById('detail-rows').innerHTML = `
+        <div class="detail-row">
+            <span class="detail-label">Quantità</span>
+            <span class="detail-value">${p.qty} ${p.unit}</span>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label">Soglia minima</span>
+            <span class="detail-value">${p.threshold} ${p.unit}</span>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label">Scadenza</span>
+            <span class="detail-value card-expiry ${expiryStatus}" style="display:inline-block">
+                ${getExpiryLabel(p.expiry)}
+            </span>
+        </div>
+        ${p.barcode ? `<div class="detail-row">
+            <span class="detail-label">Barcode</span>
+            <span class="detail-value">🔖 ${p.barcode}</span>
+        </div>` : ''}
+        ${p.notes ? `<div class="detail-row">
+            <span class="detail-label">Note</span>
+            <span class="detail-value">${p.notes}</span>
+        </div>` : ''}
+    `;
+    document.getElementById('detail-modal').classList.add('active');
+}
+
+function closeDetail() {
+    document.getElementById('detail-modal').classList.remove('active');
+    detailId = null;
+}
+
+function editFromDetail() {
+    const p = products.find(x => x.id === detailId);
+    if (!p) return;
+    closeDetail();
+    editingId = p.id;
+    scannedBarcode = p.barcode || '';
+    selectedEmoji = p.emoji;
+    document.getElementById('add-modal-title').textContent = '✏️ Modifica Prodotto';
+    document.getElementById('input-name').value = p.name;
+    document.getElementById('input-category').value = p.category;
+    document.getElementById('input-qty').value = p.qty;
+    document.getElementById('input-unit').value = p.unit;
+    document.getElementById('input-expiry').value = p.expiry || '';
+    document.getElementById('input-threshold').value = p.threshold;
+    document.getElementById('input-notes').value = p.notes || '';
+    if (p.barcode) {
+        document.getElementById('barcode-found-box').style.display = 'block';
+        document.getElementById('barcode-found-code').textContent = p.barcode;
+        document.getElementById('barcode-found-name').textContent = p.name;
+        document.getElementById('barcode-found-brand').textContent = '';
+        document.getElementById('barcode-found-emoji').textContent = p.emoji;
+    } else {
+        document.getElementById('barcode-found-box').style.display = 'none';
+    }
+    renderEmojiGrid();
+    document.getElementById('add-modal').classList.add('active');
+}
+
+function deleteFromDetail() {
+    if (!detailId) return;
+    const p = products.find(x => x.id === detailId);
+    if (!confirm(`Eliminare "${p?.name}"?`)) return;
+    products = products.filter(x => x.id !== detailId);
+    saveData();
+    renderCategoryTabs();
+    renderProducts();
+    updateStats();
+    checkNotifications();
+    closeDetail();
+    showToast('🗑️ Prodotto eliminato', 'error');
+}
+
+// ========== SCANNER ==========
+function openScanner() {
+    document.getElementById('scanner-modal').classList.add('active');
+    setTimeout(startQuagga, 300);
+}
+
+function closeScanner() {
+    stopQuagga();
+    document.getElementById('scanner-modal').classList.remove('active');
+}
+
+function startQuagga() {
+    if (scannerRunning) return;
+    Quagga.init({
+        inputStream: {
+            name: 'Live',
+            type: 'LiveStream',
+            target: document.getElementById('scanner-area'),
+            constraints: {
+                facingMode: 'environment',
+                width: { ideal: 1280 },
+                height: { ideal: 720 }
+            }
+        },
+        decoder: {
+            readers: ['ean_reader','ean_8_reader','code_128_reader',
+                      'code_39_reader','upc_reader','upc_e_reader']
+        },
+        locate: true
+    }, function(err) {
+        if (err) {
+            document.getElementById('scanner-status').textContent = '❌ Fotocamera non disponibile';
+            return;
+        }
+        Quagga.start();
+        scannerRunning = true;
+        document.getElementById('scanner-status').textContent = '📷 Inquadra il codice a barre';
+    });
+    Quagga.onDetected(onBarcodeDetected);
+}
+
+function stopQuagga() {
+    if (!scannerRunning) return;
+    Quagga.offDetected(onBarcodeDetected);
+    Quagga.stop();
+    scannerRunning = false;
+}
+
+let lastBarcode = '';
+let barcodeCount = 0;
+
+function onBarcodeDetected(result) {
+    const code = result.codeResult.code;
+    if (code === lastBarcode) {
+        barcodeCount++;
+    } else {
+        lastBarcode = code;
+        barcodeCount = 1;
+    }
+    if (barcodeCount < 3) return;
+    barcodeCount = 0;
+    lastBarcode = '';
+    stopQuagga();
+    document.getElementById('scanner-status').textContent = `✅ Codice: ${code}`;
+    lookupBarcode(code);
+}
+
+async function lookupBarcode(code) {
+    document.getElementById('scanner-status').textContent = '🔍 Ricerca prodotto...';
+    try {
+        const res = await fetch(`https://world.openfoodfacts.org/api/v0/product/${code}.json`);
+        const data = await res.json();
+        if (data.status === 1) {
+            const prod = data.product;
+            const name = prod.product_name_it || prod.product_name || prod.abbreviated_product_name || '';
+            const brand = prod.brands || '';
+            const tags = prod.categories_tags || [];
+            const category = mapCategory(tags);
+            const emoji = categoryEmoji(category);
+            document.getElementById('scanner-status').textContent = `✅ Trovato: ${name || code}`;
+            scannedBarcode = code;
+            setTimeout(() => {
+                document.getElementById('scanner-modal').classList.remove('active');
+                fillFormFromBarcode(name, brand, category, emoji, code);
+            }, 800);
+        } else {
+            scannedBarcode = code;
+            document.getElementById('scanner-status').textContent = `⚠️ Codice ${code} non trovato.`;
+            setTimeout(() => {
+                document.getElementById('scanner-modal').classList.remove('active');
+                fillFormFromBarcode('', '', '📦 Altro', '📦', code);
+            }, 1500);
+        }
+    } catch(e) {
+        scannedBarcode = code;
+        document.getElementById('scanner-status').textContent = `⚠️ Offline. Codice salvato: ${code}`;
+        setTimeout(() => {
+            document.getElementById('scanner-modal').classList.remove('active');
+            fillFormFromBarcode('', '', '📦 Altro', '📦', code);
+        }, 1500);
+    }
+}
+
+function fillFormFromBarcode(name, brand, category, emoji, code) {
+    if (name) document.getElementById('input-name').value = name;
+    if (category) document.getElementById('input-category').value = category;
+    selectedEmoji = emoji;
+    renderEmojiGrid();
+    document.getElementById('barcode-found-box').style.display = 'block';
+    document.getElementById('barcode-found-name').textContent = name || 'Prodotto sconosciuto';
+    document.getElementById('barcode-found-brand').textContent = brand || '';
+    document.getElementById('barcode-found-emoji').textContent = emoji;
+    document.getElementById('barcode-found-code').textContent = code;
+    document.getElementById('add-modal').classList.add('active');
+}
+
+function mapCategory(tags) {
+    const t = tags.join(' ').toLowerCase();
+    if (t.includes('pasta') || t.includes('rice') || t.includes('riso')) return '🍝 Pasta & Riso';
+    if (t.includes('dairy') || t.includes('milk') || t.includes('latte') || t.includes('cheese')) return '🥛 Latticini';
+    if (t.includes('meat') || t.includes('carne') || t.includes('fish') || t.includes('pesce')) return '🥩 Carne & Pesce';
+    if (t.includes('beverage') || t.includes('drink') || t.includes('juice')) return '🧃 Bevande';
+    if (t.includes('sweet') || t.includes('chocolate') || t.includes('biscuit')) return '🧁 Dolci & Snack';
+    if (t.includes('bread') || t.includes('cereal') || t.includes('pane')) return '🍞 Pane & Cereali';
+    if (t.includes('vegetable') || t.includes('fruit') || t.includes('verdura')) return '🥦 Frutta & Verdura';
+    if (t.includes('sauce') || t.includes('condiment') || t.includes('salsa')) return '🫙 Condimenti';
+    if (t.includes('frozen') || t.includes('surgelat')) return '🧊 Surgelati';
+    if (t.includes('canned') || t.includes('conserv')) return '🥫 Conserve';
+    return '📦 Altro';
+}
+
+function categoryEmoji(cat) { return cat.split(' ')[0] || '📦'; }
+
+// ========== NOTIFICHE ==========
+function requestNotificationPermission() {
+    if ('Notification' in window && Notification.permission === 'default') {
+        Notification.requestPermission();
+    }
+}
+
+function checkNotifications() {
+    const expired = products.filter(p => getExpiryStatus(p.expiry) === 'expired');
+    const expiring = products.filter(p => getExpiryStatus(p.expiry) === 'expiring');
+    const low = products.filter(p => p.qty <= p.threshold && p.qty > 0);
+
+    let html = '';
+    expired.forEach(p => {
+        html += `<div class="notif-item danger">
+            🔴 <strong>${p.emoji} ${p.name}</strong> — ${getExpiryLabel(p.expiry)}
+        </div>`;
+    });
+    expiring.forEach(p => {
+        html += `<div class="notif-item warning">
+            🟡 <strong>${p.emoji} ${p.name}</strong> — ${getExpiryLabel(p.expiry)}
+        </div>`;
+    });
+    low.forEach(p => {
+        html += `<div class="notif-item info">
+            🔵 <strong>${p.emoji} ${p.name}</strong> — Scorta bassa (${p.qty} ${p.unit})
+        </div>`;
+    });
+    if (!html) html = `<div class="notif-item">✅ Tutto ok! Nessun avviso.</div>`;
+    document.getElementById('notif-list').innerHTML = html;
+    updateStats();
+    sendPushNotifications(expired, expiring, low);
+}
+
+function sendPushNotifications(expired, expiring, low) {
+    if (!('Notification' in window) || Notification.permission !== 'granted') return;
+    const key = 'last_notif_' + new Date().toDateString();
+    if (localStorage.getItem(key)) return;
+    localStorage.setItem(key, '1');
+    if (expired.length > 0) {
+        new Notification('🏠 Dispensa - Prodotti scaduti', {
+            body: expired.map(p => p.name).join(', ')
+        });
+    }
+    if (expiring.length > 0) {
+        setTimeout(() => new Notification('🏠 Dispensa - In scadenza', {
+            body: expiring.map(p => p.name).join(', ')
+        }), 1000);
+    }
+    if (low.length > 0) {
+        setTimeout(() => new Notification('🏠 Dispensa - Scorte basse', {
+            body: low.map(p => p.name).join(', ')
+        }), 2000);
+    }
+}
+
+function toggleNotifPanel() {
+    document.getElementById('notif-panel').classList.toggle('visible');
+}
+
+// ========== TOAST ==========
+function showToast(msg, type = '') {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = `toast ${type} show`;
+    setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ========== EXPORT ==========
+function exportData() {
+    const data = JSON.stringify(products, null, 2);
+    const blob = new Blob([data], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `dispensa_${new Date().toISOString().split('T')[0]}.json`;
+    a.click();
+    showToast('📤 Dati esportati!', 'success');
+}
+
+// ========== START ==========
+init();
+</script>
+</body>
+</html>
