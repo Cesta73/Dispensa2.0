@@ -671,7 +671,7 @@ async function loadProducts() {
             headers: { 'X-Master-Key': API_KEY }
         });
         const data = await res.json();
-        products = Array.isArray(data.record) ? data.record : [];
+        products = data.record.products || [];
         renderAll();
     } catch (err) {
         console.error(err);
