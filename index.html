@@ -1152,15 +1152,15 @@ function showToast(msg, type='info') {
     toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
 }
 
-// Chiudi modal cliccando fuori
-document.querySelectorAll('.modal-overlay').forEach(overlay => {
-    overlay.addEventListener('click', e => {
-        if (e.target === overlay) {
-            overlay.classList.remove('active');
-            if (overlay.id === 'scanner-modal') closeScanner();
-        }
-    });
-});
-</script>
+       // Chiudi modal cliccando fuori
+        document.querySelectorAll('.modal-overlay').forEach(overlay => {
+            overlay.addEventListener('click', e => {
+                if (e.target === overlay) {
+                    overlay.classList.remove('active');
+                    if (overlay.id === 'scanner-modal') closeScanner();
+                }
+            });
+        });
+    </script>
 </body>
 </html>
