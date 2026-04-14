@@ -691,7 +691,7 @@ async function saveProducts() {
                 'Content-Type': 'application/json',
                 'X-Master-Key': API_KEY
             },
-            body: JSON.stringify(products)
+            body: JSON.stringify({ products: products })
         });
         showToast('✅ Salvato!', 'success');
     } catch (err) {
