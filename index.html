@@ -1031,11 +1031,13 @@ function closeScanner() {
 async function startScanner() {
     try {
         codeReader = new ZXing.BrowserMultiFormatReader();
-        const devices = await codeReader.listVideoInputDevices();
-        const deviceId = devices.length > 1 ? devices[1].deviceId : (devices[0]?.deviceId);
         document.getElementById('scanner-status').textContent = '📷 Inquadra il codice a barre...';
 
-        codeReader.decodeFromVideoDevice(deviceId, 'scanner-video', async (result, err) => {
+        const constraints = {
+            video: { facingMode: 'environment' }
+        };
+
+        codeReader.decodeFromConstraints(constraints, 'scanner-video', async (result, err) => {
             if (result) {
                 const barcode = result.getText();
                 codeReader.reset();
@@ -1048,7 +1050,6 @@ async function startScanner() {
         document.getElementById('scanner-status').textContent = '❌ Fotocamera non disponibile';
         console.error(err);
     }
-}
 
 async function lookupBarcode(barcode) {
     showToast('🔍 Ricerca prodotto...', 'info');
